@@ -51,12 +51,32 @@
          <number>0</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout"/>
-        </item>
-        <item>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="ip_edit"/>
+          <item row="1" column="0" colspan="5">
+           <widget class="QProgressBar" name="download_progress_bar">
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="textDirection">
+             <enum>QProgressBar::TopToBottom</enum>
+            </property>
+            <property name="format">
+             <string>%p%</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Каталог для загрузки файлов:</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
@@ -64,6 +84,17 @@
              <string>IP-адрес:</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="4">
+           <widget class="QPushButton" name="download_from_upms_button">
+            <property name="text">
+             <string>Скачать результаты
+с установки</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="ip_edit"/>
           </item>
           <item row="0" column="3">
            <widget class="QLineEdit" name="download_path_edit">
@@ -81,44 +112,70 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Каталог для загрузки файлов:</string>
+          <item row="2" column="0" colspan="4">
+           <widget class="QTableView" name="measures_table">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
             </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
            </widget>
           </item>
-          <item row="0" column="4">
-           <widget class="QPushButton" name="download_from_upms_button">
-            <property name="text">
-             <string>Скачать результаты
-с установки</string>
-            </property>
-           </widget>
+          <item row="2" column="4">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QPushButton" name="input_result_button">
+              <property name="text">
+               <string>Ввести
+результат</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="create_report_button">
+              <property name="text">
+               <string>Сформировать
+отчет</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="remove_selected_button">
+              <property name="text">
+               <string>Удалить
+выделенные</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="download_progress_bar">
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-          <property name="textDirection">
-           <enum>QProgressBar::TopToBottom</enum>
-          </property>
-          <property name="format">
-           <string>%p%</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTableView" name="measures_table"/>
         </item>
        </layout>
       </widget>

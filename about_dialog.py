@@ -1,6 +1,7 @@
 from PyQt5 import QtGui, QtWidgets, QtCore
 
 from ui.py.about_dialog import Ui_about_dialog as AboutForm
+from text import Text
 import revisions
 
 
@@ -13,7 +14,7 @@ class AboutDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.show()
 
-        self.ui.version_label.setText(f"Версия программы: {revisions.Revisions.upms_1v_pc}")
+        self.ui.version_label.setText(Text.get("version").format(revisions.Revisions.upms_1v_pc))
 
         self.ui.close_button.clicked.connect(self.reject)
 

@@ -4,6 +4,8 @@ import os
 
 import tftpy
 
+from text import Text
+
 
 __files_list_filename = "files_list.txt"
 __exclude_words = ["ls", "check", "copy", "System"]
@@ -14,8 +16,16 @@ def get_files_list(a_ip: str) -> Optional[List[str]]:
     try:
         tftp_client.download("ls.txt", __files_list_filename, timeout=5)
     except tftpy.TftpTimeout:
-        logging.error("Не удалось скачать файлы (upms_tftp.get_files_list() raise TftpTimeout).")
+        logging.error(Text.get("get_files_list_err"))
+        if os.path.isfile(__files_list_filename):
+            tftp_client.context.end()
+            os.remove(__files_list_filename)
         return None
+    except Exception:
+        if os.path.isfile(__files_list_filename):
+            tftp_client.context.end()
+            os.remove(__files_list_filename)
+        raise
     else:
         with open(__files_list_filename) as files_list_file:
             files_list = []
@@ -39,7 +49,7 @@ def download_file_by_tftp(a_ip: str, a_filename: str, a_dst_filepath: str, a_tri
             return True
         except tftpy.TftpTimeout:
             try_number += 1
-            logging.error(f"Не удалось скачать файл {a_filename}. Попытка {try_number}/{a_tries_count}")
+            logging.error(Text.get("download_file_by_tftp_err").format(a_filename, try_number, a_tries_count))
     return False
 
 

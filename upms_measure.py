@@ -3,8 +3,8 @@ from text import Text
 
 class UpmsMeasure:
     TYPE_TO_STR = {
-        1: Text.get("e_stopwatch"),
-        2: Text.get("m_stopwatch"),
+        1: Text.get("m_stopwatch"),
+        2: Text.get("e_stopwatch"),
         3: Text.get("clock"),
     }
 
@@ -47,6 +47,6 @@ class UpmsMeasure:
                f"{Text.get('uid')}: {self.user_id}, " \
                f"{Text.get('type')}: {UpmsMeasure.TYPE_TO_STR[self.type]}, " \
                f"{Text.get('date')}: {self.date}, " \
-               f"{Text.get('сomment')}: {self.comment}, " \
+               f"{Text.get('comment')}: {self.comment}, " \
                f"{Text.get('interval')}: {self.interval}, " \
                f"{Text.get('result')}: {self.result}, " \

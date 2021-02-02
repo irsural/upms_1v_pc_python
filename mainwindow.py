@@ -6,14 +6,15 @@ import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForWidget
+from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForView
 from irspy.settings_ini_parser import BadIniException
 from irspy.utils import exception_decorator
 from irspy.qt import qt_utils
 
 from ui.py.mainwindow import Ui_MainWindow as MainForm
-from about_dialog import AboutDialog
+from upms_db_model import UpmsDatabaseModel
 from upms_database import UpmsDatabase
+from about_dialog import AboutDialog
 from upms_measure import UpmsMeasure
 from text import Text
 import upms_tftp
@@ -44,16 +45,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.set_up_logger()
 
-            self.ui.measures_table.setItemDelegate(TransparentPainterForWidget(self.ui.measures_table, "#d4d4ff"))
+            self.ui.measures_table.setItemDelegate(TransparentPainterForView(self.ui.measures_table, "#d4d4ff"))
             self.ui.download_path_edit.setText(self.settings.save_folder_path)
 
             self.ui.ip_edit.setText(self.settings.ip)
             self.ui.download_path_edit.setText(self.settings.path)
 
+            self.db = UpmsDatabase("database.db")
+            self.measures_table_model = UpmsDatabaseModel(self.db, self)
+            self.proxy = QtCore.QSortFilterProxyModel()
+            self.proxy.setSourceModel(self.measures_table_model)
+            self.ui.measures_table.setModel(self.proxy)
+            self.ui.measures_table.resizeRowsToContents()
+
             self.show()
             self.connect_all()
-
-            self.db = UpmsDatabase("database.db")
 
             self.tick_timer = QtCore.QTimer(self)
             self.tick_timer.timeout.connect(self.tick)
@@ -89,24 +95,30 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             socket.inet_aton(ip)
         except socket.error:
-            QtWidgets.QMessageBox.critical(self, "Ошибка", "Задан неверный ip-адрес", QtWidgets.QMessageBox.Ok,
-                                           QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("ip_format_err"),
+                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
-            files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
-            if files_list is not None:
-                if "main_table.csv" in files_list:
-                    try:
-                        upms_tftp.download_file_by_tftp(ip, self.measures_filename, a_download_filepath)
-                        result = True
-                    except FileNotFoundError:
-                        QtWidgets.QMessageBox.critical(self, "Ошибка", "Неверно указан каталог для загрузки файлов",
+            try:
+                files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
+            except ConnectionResetError:
+                QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("connection_err"),
+                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+            else:
+                if files_list is not None:
+                    if self.measures_filename in files_list:
+                        try:
+                            upms_tftp.download_file_by_tftp(ip, self.measures_filename, a_download_filepath)
+                            result = True
+                        except FileNotFoundError:
+                            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
+                                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                    else:
+                        QtWidgets.QMessageBox.critical(self, Text.get("err"),
+                                                       Text.get("main_table_not_found_err").format(self.measures_filename),
                                                        QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                 else:
-                    QtWidgets.QMessageBox.critical(self, "Ошибка", f"Файл '{self.measures_filename}' не обнаружен на устройстве",
+                    QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("download_err"),
                                                    QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-            else:
-                QtWidgets.QMessageBox.critical(self, "Ошибка", "Не удалось скачать файлы с устройства",
-                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         return result
 
     def download_photo(self, a_measure_id: int, a_files_list: List[str], a_download_folder: str):
