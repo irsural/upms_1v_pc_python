@@ -1,0 +1,18 @@
+id,user_id,type,date,comment,interval,result,other
+20091, 1, 3, 2021-01-12 14:14:51, Заказ: 123Inventory number: Inventory number: , 0.000000, 0.000000, h;
+20092, 1, 3, 2021-01-12 14:14:56, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20093, 1, 3, 2021-01-12 14:15:02, Заказ: 123Inventory number: Inventory number: , 6.000000, 0.000000, h;
+20094, 1, 3, 2021-01-12 14:15:07, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20095, 1, 3, 2021-01-12 14:15:21, Заказ: 123Inventory number: Inventory number: , 0.000000, 0.000000, h;
+20096, 1, 3, 2021-01-12 14:15:26, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20097, 1, 3, 2021-01-12 14:15:32, Заказ: 123Inventory number: Inventory number: , 6.000000, 0.000000, h;
+20098, 1, 3, 2021-01-12 14:15:37, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20099, 1, 3, 2021-01-12 14:20:53, Заказ: 123Inventory number: Inventory number: , 0.000000, 0.000000, h;
+20100, 1, 3, 2021-01-12 14:20:58, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20101, 1, 3, 2021-01-12 14:21:04, Заказ: 123Inventory number: Inventory number: , 6.000000, 0.000000, h;
+20102, 1, 3, 2021-01-12 14:21:09, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20103, 1, 3, 2021-01-12 15:04:14, Заказ: 123Inventory number: Inventory number: , 0.000000, 0.000000, h;
+20104, 1, 3, 2021-01-12 15:04:19, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20105, 1, 3, 2021-01-12 15:04:25, Заказ: 123Inventory number: Inventory number: , 6.000000, 0.000000, h;
+20106, 1, 3, 2021-01-12 15:04:30, Заказ: 123Inventory number: Inventory number: , 5.000000, 0.000000, h;
+20108, 1, 2, 2021-01-29 10:07:23, Заказ: Заказ: Заказ: Заказ: Заказ: Заказ: Заказ: З, 0.001000, 0.000000, h;
