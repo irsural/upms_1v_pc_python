@@ -49,6 +49,7 @@ class Text:
         "confirm": ["Подтвердите действие", "Confirm the action"],
         "delete_confirm": ["Вы действительно хотите удалить выбранные измерения?",
                            "Are you sure you want to remove the selected measurements?"],
+        "measure": ["Номер измерения: {}", "Measurement number: {}"]
     }
 
     @staticmethod

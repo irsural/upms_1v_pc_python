@@ -259,7 +259,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 return path
         return ""
 
-    def get_accessible_name(self, a_name_template, a_save_folder, a_extension: str) -> str:
+    @staticmethod
+    def get_accessible_name(a_name_template, a_save_folder, a_extension: str) -> str:
         number = 2
         name = a_name_template
         while os.path.isfile(f"{a_save_folder.rstrip(os.sep)}{os.sep}{name}{a_extension}"):
@@ -268,12 +269,14 @@ class MainWindow(QtWidgets.QMainWindow):
         return f"{name}{a_extension}"
 
     @exception_decorator
-    def create_report(self, a_name_template, a_save_folder, a_template_path, a_upms_measures: List[UpmsMeasure]):
+    def create_report(self, a_name_template, a_save_folder, a_template_path, a_photos_path,
+                      a_upms_measures: List[UpmsMeasure]):
         filename = self.get_accessible_name(a_name_template, a_save_folder, os.path.splitext(a_template_path)[1])
         report_path = a_save_folder.rstrip(os.sep) + os.sep + filename
         shutil.copyfile(a_template_path, report_path)
 
         data_sheet = ""
+        photo_sheet = ""
         data_sheet_exists = True
         wb = openpyxl.load_workbook(report_path)
         if self.data_sheet_ru in wb.sheetnames:
@@ -294,6 +297,34 @@ class MainWindow(QtWidgets.QMainWindow):
                 column[3].value = a_upms_measures[idx].result
                 column[4].value = a_upms_measures[idx].comment
 
+            if photo_sheet in wb.sheetnames:
+                sheet = wb.get_sheet_by_name(photo_sheet)
+            else:
+                sheet = wb.create_sheet(photo_sheet)
+
+            vertical_start = 3
+            vertical_step = 23
+
+            horizontal_start = 2
+            horizontal_step = 10
+            for idx, upms_measure in enumerate(a_upms_measures):
+                photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
+                try:
+                    img = openpyxl.drawing.image.Image(photo_path)
+                    new_height = img.height * 2/3
+                    new_width = img.width * 2/3
+                    img.height = new_height
+                    img.width = new_width
+
+                    row = vertical_start + idx // 2 * vertical_step
+                    col = horizontal_start if idx % 2 == 0 else (horizontal_start + horizontal_step)
+
+                    sheet.add_image(img, sheet.cell(row, col).coordinate)
+                    cell_font = openpyxl.styles.Font(size='15')
+                    sheet.cell(row - 1, col, value=Text.get("measure").format(upms_measure.id)).font = cell_font
+                except FileNotFoundError:
+                    logging.warning(f"File {photo_path} is not found")
+
             wb.save(report_path)
             wb.close()
         else:
@@ -310,11 +341,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 if save_folder and os.path.isdir(save_folder):
                     template_path = self.get_template_file(types[0])
                     if template_path:
-                        name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
-                            self.default_name_template
-                        upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
-                                         for idx in rows]
-                        self.create_report(name_template, save_folder, template_path, upms_measures)
+                        if self.ui.download_path_edit.text():
+                            name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
+                                self.default_name_template
+                            upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
+                                             for idx in rows]
+                            self.create_report(name_template, save_folder, template_path,
+                                               self.ui.download_path_edit.text(), upms_measures)
+                        else:
+                            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
+                                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                     else:
                         QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("templates_are_not_found"),
                                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
