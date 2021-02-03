@@ -94,6 +94,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.create_report_button.clicked.connect(self.create_report_button_clicked)
         self.ui.remove_selected_button.clicked.connect(self.remove_selected_button_clicked)
 
+        self.ui.choose_download_path_button.clicked.connect(self.choose_download_path_button_clicked)
+        self.ui.choose_save_folder_path_edit.clicked.connect(self.choose_save_folder_path_button_clicked)
+        self.ui.extra_params_button.clicked.connect(self.extra_params_button_clicked)
+
     def set_up_logger(self):
         log = qt_utils.QTextEditLogger(self.ui.log_text_edit)
         log.setFormatter(logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
@@ -387,6 +391,19 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+
+    def extra_params_button_clicked(self):
+        pass
+
+    def choose_download_path_button_clicked(self):
+        new_path = QtWidgets.QFileDialog.getExistingDirectory(self, Text.get("download_folder"), self.settings.path)
+        if new_path:
+            self.ui.download_path_edit.setText(new_path)
+
+    def choose_save_folder_path_button_clicked(self):
+        new_path = QtWidgets.QFileDialog.getExistingDirectory(self, Text.get("save_folder"), self.settings.save_folder)
+        if new_path:
+            self.ui.save_folder_edit.setText(new_path)
 
     def open_about(self):
         about_dialog = AboutDialog(self)

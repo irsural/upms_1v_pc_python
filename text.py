@@ -24,6 +24,8 @@ class Text:
         "result": ["Результат", "Result"],
         "other": ["Другое", "Other"],
         "measure": ["Номер измерения: {}", "Measurement number: {}"],
+        "download_folder": ["Каталог для загрузки файлов", "Directory for downloading files"],
+        "save_folder": ["Каталог для сохранения протоколов", "Directory for saving reports"],
 
         "warning": ["Предупреждение", "Warning"],
         "download_canceled": ["Скачивание отменено", "Download canceled"],
