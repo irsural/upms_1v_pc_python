@@ -2,5 +2,5 @@ from enum import IntEnum
 
 
 class Revisions(IntEnum):
-    upms_1v_pc = 3
+    upms_1v_pc = 4
     irspy = 51
