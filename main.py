@@ -5,7 +5,7 @@ ui_to_py.convert_ui("../irspy/qt/custom_widgets/ui_forms", "../irspy/qt/custom_w
 
 
 def main():
-    # Импорты здесь, чтобы ловить их исключения в скомпиленной версии программы, если они возникнут при импорте
+    # Импорты здесь, чтобы ловить исключения в собранной версии программы, если они возникнут при импорте
     import sys
 
     from PyQt5.QtWidgets import QApplication

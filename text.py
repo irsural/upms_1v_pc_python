@@ -39,6 +39,12 @@ class Text:
                                "Failed to download files (upms_tftp.get_files_list() raise TftpTimeout)."],
         "download_file_by_tftp_err": ["Не удалось скачать файл {}. Попытка {}/{}",
                                       "Failed to download file {}. Attempt {}/{}"],
+        "photo_not_found": ["Файл {} не найден", "File {} not found"],
+        "info": ["Информация", "Information"],
+        "selection_info": ["Необходимо выделить строки в таблице", "Select rows in the table, please"],
+        "confirm": ["Подтвердите действие", "Confirm the action"],
+        "delete_confirm": ["Вы действительно хотите удалить выбранные измерения?",
+                           "Are you sure you want to remove the selected measurements?"],
     }
 
     @staticmethod

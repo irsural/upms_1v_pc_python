@@ -1,4 +1,5 @@
 from enum import IntEnum, auto
+from copy import deepcopy
 from typing import List
 import logging
 
@@ -66,6 +67,22 @@ class UpmsDatabaseModel(QAbstractTableModel):
 
         return QVariant()
 
+    def get_id_by_row(self, a_row):
+        return self.__records[a_row].__getattribute__(UpmsDatabaseModel.COLUMN_TO_UPMS_MEASURE_ATTR[self.Column.ID])
+
+    def get_upms_measure_by_row(self, a_row) -> UpmsMeasure:
+        return deepcopy(self.__records[a_row])
+
+    def remove_row(self, a_row: int):
+        self.beginRemoveRows(QModelIndex(), a_row, a_row)
+        self.__db.remove(self.__records[a_row].id)
+        del self.__records[a_row]
+        self.endRemoveRows()
+
+    def update_result(self, a_row: int, a_value: str):
+        self.__records[a_row].result = a_value
+        self.__db.update(self.__records[a_row])
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or (self.rowCount() < index.row()) or \
                 (role != Qt.DisplayRole and role != Qt.EditRole and role != Qt.BackgroundRole):
@@ -82,4 +99,14 @@ class UpmsDatabaseModel(QAbstractTableModel):
             return str(cell_value)
 
     def setData(self, index: QModelIndex, value: str, role=Qt.EditRole):
-        return False
+        self.__records[index.row()].__setattr__(
+            UpmsDatabaseModel.COLUMN_TO_UPMS_MEASURE_ATTR[index.column()], value)
+        self.__db.update(self.__records[index.row()])
+        return True
+
+    def flags(self, index):
+        item_flags = super().flags(index)
+        if index.isValid():
+            if index.column() in (UpmsDatabaseModel.Column.COMMENT, UpmsDatabaseModel.Column.RESULT):
+                item_flags |= Qt.ItemIsEditable
+        return item_flags

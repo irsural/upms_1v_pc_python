@@ -1,5 +1,5 @@
 from logging.handlers import RotatingFileHandler
-from typing import List
+from typing import List, Optional
 import logging
 import socket
 import os
@@ -7,11 +7,12 @@ import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForView
+from irspy.utils import exception_decorator, exception_decorator_print
 from irspy.settings_ini_parser import BadIniException
-from irspy.utils import exception_decorator
 from irspy.qt import qt_utils
 
 from ui.py.mainwindow import Ui_MainWindow as MainForm
+from result_input_dialog import ResultInputDialog
 from upms_db_model import UpmsDatabaseModel
 from upms_database import UpmsDatabase
 from about_dialog import AboutDialog
@@ -52,11 +53,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.download_path_edit.setText(self.settings.path)
 
             self.db = UpmsDatabase("database.db")
-            self.measures_table_model = UpmsDatabaseModel(self.db, self)
-            self.proxy = QtCore.QSortFilterProxyModel()
-            self.proxy.setSourceModel(self.measures_table_model)
-            self.ui.measures_table.setModel(self.proxy)
-            self.ui.measures_table.resizeRowsToContents()
+            self.measures_table_model: Optional[UpmsDatabaseModel] = None
+            self.proxy: Optional[QtCore.QSortFilterProxyModel] = None
+            self.update_model()
 
             self.show()
             self.connect_all()
@@ -73,6 +72,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.ip_edit.textChanged.connect(self.ip_changed)
         self.ui.download_path_edit.textChanged.connect(self.path_changed)
 
+        self.ui.input_result_button.clicked.connect(self.input_result_button_clicked)
+        self.ui.create_report_button.clicked.connect(self.create_report_button_clicked)
+        self.ui.remove_selected_button.clicked.connect(self.remove_selected_button_clicked)
+
     def set_up_logger(self):
         log = qt_utils.QTextEditLogger(self.ui.log_text_edit)
         log.setFormatter(logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
@@ -84,6 +87,13 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.getLogger().addHandler(file_log)
         logging.getLogger().addHandler(log)
         logging.getLogger().setLevel(logging.WARNING)
+
+    def update_model(self):
+        self.measures_table_model = UpmsDatabaseModel(self.db, self)
+        self.proxy = QtCore.QSortFilterProxyModel()
+        self.proxy.setSourceModel(self.measures_table_model)
+        self.ui.measures_table.setModel(self.proxy)
+        self.ui.measures_table.resizeRowsToContents()
 
     @exception_decorator
     def tick(self):
@@ -177,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 self.ui.download_progress_bar.setValue(0)
                 self.ui.download_progress_bar.setHidden(True)
-
+                self.update_model()
         else:
             QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
@@ -187,6 +197,61 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def path_changed(self, a_path):
         self.settings.path = a_path
+
+    @exception_decorator_print
+    def input_result_button_clicked(self, _):
+        rows = self.ui.measures_table.selectionModel().selectedRows()
+        if rows:
+            for idx in rows:
+                real_row = self.proxy.mapToSource(idx).row()
+
+                self.ui.measures_table.selectionModel().setCurrentIndex(
+                    self.measures_table_model.index(idx.row(), 0),
+                    QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows
+                )
+                files_path = self.ui.download_path_edit.text()
+                if files_path and os.path.isdir(files_path):
+                    upms_measure = self.measures_table_model.get_upms_measure_by_row(real_row)
+                    dialog = ResultInputDialog(upms_measure, files_path, self.settings, self)
+                    res = dialog.exec()
+                    if res == QtWidgets.QDialog.Accepted:
+                        new_result = dialog.get_result()
+                        self.measures_table_model.update_result(real_row, new_result)
+                        logging.warning(upms_measure.result)
+                        # Для сохранения состояния (иначе не вызывается closeEvent)
+                        dialog.close()
+                    else:
+                        break
+                else:
+                    QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
+                                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+        else:
+            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
+                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+
+    def create_report_button_clicked(self, _):
+        rows = self.ui.measures_table.selectionModel().selectedRows()
+        if rows:
+            for idx in rows:
+                real_row = self.proxy.mapToSource(idx).row()
+        else:
+            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
+                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+
+    def remove_selected_button_clicked(self, _):
+        rows = self.ui.measures_table.selectionModel().selectedRows()
+        if rows:
+            res = QtWidgets.QMessageBox.question(self, Text.get("confirm"), Text.get("delete_confirm"),
+                                                 QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+                                                 QtWidgets.QMessageBox.Cancel)
+            if res == QtWidgets.QMessageBox.Ok:
+                real_rows = [self.proxy.mapToSource(r).row() for r in rows]
+                real_rows.sort(reverse=True)
+                for row in real_rows:
+                    self.measures_table_model.remove_row(row)
+        else:
+            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
+                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
     def open_about(self):
         about_dialog = AboutDialog(self)
