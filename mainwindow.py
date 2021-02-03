@@ -1,10 +1,12 @@
 from logging.handlers import RotatingFileHandler
 from typing import List, Optional
 import logging
+import shutil
 import socket
 import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
+import openpyxl
 
 from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForView
 from irspy.utils import exception_decorator, exception_decorator_print
@@ -24,6 +26,18 @@ import settings
 
 class MainWindow(QtWidgets.QMainWindow):
     measures_filename = "main_table.csv"
+    default_name_template = "report"
+
+    MEASURE_TYPE_TO_TEMPLATE_PATH = {
+        UpmsMeasure.MeasureType.MECH_STOPWATCH: ("./Templates/ms_template.xlsx", "./Templates/ms_template.ods"),
+        UpmsMeasure.MeasureType.ELEC_STOPWATCH: ("./Templates/es_template.xlsx", "./Templates/es_template.ods"),
+        UpmsMeasure.MeasureType.CLOCK: ("./Templates/clock_template.xlsx", "./Templates/clock_template.ods"),
+    }
+
+    data_sheet_ru = "Данные"
+    photo_sheet_ru = "Фото"
+    data_sheet_en = "Data"
+    photo_sheet_en = "Photos"
 
     def __init__(self):
         super().__init__()
@@ -51,6 +65,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.ui.ip_edit.setText(self.settings.ip)
             self.ui.download_path_edit.setText(self.settings.path)
+            self.ui.name_template_edit.setText(self.settings.name_template)
+            self.ui.save_folder_edit.setText(self.settings.save_folder)
 
             self.db = UpmsDatabase("database.db")
             self.measures_table_model: Optional[UpmsDatabaseModel] = None
@@ -71,6 +87,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.download_from_upms_button.clicked.connect(self.download_from_upms_button_clicked)
         self.ui.ip_edit.textChanged.connect(self.ip_changed)
         self.ui.download_path_edit.textChanged.connect(self.path_changed)
+        self.ui.name_template_edit.textChanged.connect(self.name_template_changed)
+        self.ui.save_folder_edit.textChanged.connect(self.save_folder_changed)
 
         self.ui.input_result_button.clicked.connect(self.input_result_button_clicked)
         self.ui.create_report_button.clicked.connect(self.create_report_button_clicked)
@@ -198,6 +216,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def path_changed(self, a_path):
         self.settings.path = a_path
 
+    def name_template_changed(self, a_name_template):
+        self.settings.name_template = a_name_template
+
+    def save_folder_changed(self, a_save_folder):
+        self.settings.save_folder = a_save_folder
+
     @exception_decorator_print
     def input_result_button_clicked(self, _):
         rows = self.ui.measures_table.selectionModel().selectedRows()
@@ -229,11 +253,77 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
+    def get_template_file(self, a_measure_type) -> str:
+        for path in self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]:
+            if os.path.isfile(path):
+                return path
+        return ""
+
+    def get_accessible_name(self, a_name_template, a_save_folder, a_extension: str) -> str:
+        number = 2
+        name = a_name_template
+        while os.path.isfile(f"{a_save_folder.rstrip(os.sep)}{os.sep}{name}{a_extension}"):
+            name = f"{a_name_template}_{number}"
+            number += 1
+        return f"{name}{a_extension}"
+
+    @exception_decorator
+    def create_report(self, a_name_template, a_save_folder, a_template_path, a_upms_measures: List[UpmsMeasure]):
+        filename = self.get_accessible_name(a_name_template, a_save_folder, os.path.splitext(a_template_path)[1])
+        report_path = a_save_folder.rstrip(os.sep) + os.sep + filename
+        shutil.copyfile(a_template_path, report_path)
+
+        data_sheet = ""
+        data_sheet_exists = True
+        wb = openpyxl.load_workbook(report_path)
+        if self.data_sheet_ru in wb.sheetnames:
+            data_sheet = self.data_sheet_ru
+            photo_sheet = self.photo_sheet_ru
+        elif self.data_sheet_en in wb.sheetnames:
+            data_sheet = self.data_sheet_en
+            photo_sheet = self.photo_sheet_en
+        else:
+            data_sheet_exists = False
+
+        if data_sheet_exists:
+            sheet = wb.get_sheet_by_name(data_sheet)
+            for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures) + 1, min_row=1, max_row=5)):
+                column[0].value = a_upms_measures[idx].id
+                column[1].value = a_upms_measures[idx].date
+                column[2].value = a_upms_measures[idx].interval
+                column[3].value = a_upms_measures[idx].result
+                column[4].value = a_upms_measures[idx].comment
+
+            wb.save(report_path)
+            wb.close()
+        else:
+            QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("data_sheet_not_found").format(report_path),
+                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+            wb.close()
+
     def create_report_button_clicked(self, _):
         rows = self.ui.measures_table.selectionModel().selectedRows()
         if rows:
-            for idx in rows:
-                real_row = self.proxy.mapToSource(idx).row()
+            types = [self.measures_table_model.get_type(self.proxy.mapToSource(idx).row()) for idx in rows]
+            if len(types) == types.count(types[0]):
+                save_folder = self.ui.save_folder_edit.text()
+                if save_folder and os.path.isdir(save_folder):
+                    template_path = self.get_template_file(types[0])
+                    if template_path:
+                        name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
+                            self.default_name_template
+                        upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
+                                         for idx in rows]
+                        self.create_report(name_template, save_folder, template_path, upms_measures)
+                    else:
+                        QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("templates_are_not_found"),
+                                                          QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                else:
+                    QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("save_folder_error"),
+                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+            else:
+                QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("same_type_err"),
+                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)

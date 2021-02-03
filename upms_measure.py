@@ -1,11 +1,17 @@
+from enum import IntEnum
 from text import Text
 
 
 class UpmsMeasure:
+    class MeasureType(IntEnum):
+        MECH_STOPWATCH = 1
+        ELEC_STOPWATCH = 2
+        CLOCK = 3
+
     TYPE_TO_STR = {
-        1: Text.get("m_stopwatch"),
-        2: Text.get("e_stopwatch"),
-        3: Text.get("clock"),
+        MeasureType.MECH_STOPWATCH: Text.get("m_stopwatch"),
+        MeasureType.ELEC_STOPWATCH: Text.get("e_stopwatch"),
+        MeasureType.CLOCK: Text.get("clock"),
     }
 
     def __init__(self, a_id: int, a_user_id: int, a_type: int, a_date: str, a_comment: str, a_interval: str,
