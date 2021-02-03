@@ -23,10 +23,14 @@ class Text:
         "interval": ["Интервал", "Interval"],
         "result": ["Результат", "Result"],
         "other": ["Другое", "Other"],
-        "err": ["Ошибка", "Error"],
+        "measure": ["Номер измерения: {}", "Measurement number: {}"],
+
         "warning": ["Предупреждение", "Warning"],
+        "download_canceled": ["Скачивание отменено", "Download canceled"],
         "ask_overwrite": ["Запись с id={} уже существует. Перезаписать?",
                           "Entry with id={} is already exists. Overwrite it?"],
+
+        "err": ["Ошибка", "Error"],
         "path_err": ["Неверно указан каталог для загрузки файлов", "Incorrect path to download folder"],
         "save_folder_error": ["Неверно указан каталог для сохранения протоколов", "Incorrect path to save folder"],
         "templates_are_not_found": ['Файл шаблона не найден', 'Template file is not found'],
@@ -44,12 +48,15 @@ class Text:
         "same_type_err": ["Измерения должны быть одного типа", "Measurements must be same type"],
         "data_sheet_not_found": ['Страница "Данные" в файле "{}" не найдена', 'The "Data" sheet in file "{}" is not found'],
         "photo_not_found": ["Файл {} не найден", "File {} not found"],
+
         "info": ["Информация", "Information"],
         "selection_info": ["Необходимо выделить строки в таблице", "Select rows in the table, please"],
+        "success_download": ["Скачивание успешно завершено", "Download completed successfully"],
+        "success_generated": ["Протокол успешно сгенерирован", "Report has been successfully generated"],
+
         "confirm": ["Подтвердите действие", "Confirm the action"],
         "delete_confirm": ["Вы действительно хотите удалить выбранные измерения?",
                            "Are you sure you want to remove the selected measurements?"],
-        "measure": ["Номер измерения: {}", "Measurement number: {}"]
     }
 
     @staticmethod

@@ -171,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 upms_files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
                 self.ui.download_progress_bar.setHidden(False)
                 for number, measure in enumerate(measures_list):
-                    self.ui.download_progress_bar.setValue(number / len(upms_files_list) * self.ui.download_progress_bar.maximum())
+                    self.ui.download_progress_bar.setValue(number / (len(upms_files_list) - 1) * self.ui.download_progress_bar.maximum())
 
                     measure_params = [meas.strip() for meas in measure.strip().split(',')]
                     upms_measure = UpmsMeasure(*measure_params)
@@ -198,14 +198,20 @@ class MainWindow(QtWidgets.QMainWindow):
                                 self.download_photo(upms_measure.id, upms_files_list, download_folder)
                                 update_all = True
                             elif res == QtWidgets.QMessageBox.Cancel:
+                                QtWidgets.QMessageBox.warning(self, Text.get("warning"), Text.get("download_canceled"),
+                                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                                 break
                     elif not os.path.isfile(download_folder.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"):
                         # Докачиваем файл, если запись в БД есть, а файла нет
                         self.download_photo(upms_measure.id, upms_files_list, download_folder)
+                else:
+                    QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("success_download"),
+                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
                 self.ui.download_progress_bar.setValue(0)
                 self.ui.download_progress_bar.setHidden(True)
                 self.update_model()
+
         else:
             QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
@@ -327,9 +333,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             wb.save(report_path)
             wb.close()
-        else:
-            QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("data_sheet_not_found").format(report_path),
+
+            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("success_generated").format(report_path),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+        else:
+            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("data_sheet_not_found").format(report_path),
+                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             wb.close()
 
     def create_report_button_clicked(self, _):
@@ -352,13 +361,13 @@ class MainWindow(QtWidgets.QMainWindow):
                             QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
                                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                     else:
-                        QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("templates_are_not_found"),
+                        QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
                                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                 else:
-                    QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("save_folder_error"),
+                    QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("save_folder_error"),
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             else:
-                QtWidgets.QMessageBox.information(self, Text.get("err"), Text.get("same_type_err"),
+                QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("same_type_err"),
                                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
