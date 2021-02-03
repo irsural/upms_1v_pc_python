@@ -326,10 +326,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 sheet = wb.create_sheet(photo_sheet)
 
             vertical_start = 3
-            vertical_step = 23
+            vertical_step = 27
 
             horizontal_start = 2
-            horizontal_step = 10
+            horizontal_step = 9
             for idx, upms_measure in enumerate(a_upms_measures):
                 photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
                 try:
@@ -339,8 +339,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     img.height = new_height
                     img.width = new_width
 
-                    row = vertical_start + idx // 2 * vertical_step
-                    col = horizontal_start if idx % 2 == 0 else (horizontal_start + horizontal_step)
+                    row = vertical_start + idx // 2 * vertical_step if idx % 2 == 0 else \
+                        vertical_start + idx // 2 * vertical_step + 1
+                    col = horizontal_start if idx % 2 == 0 else \
+                        (horizontal_start + horizontal_step)
 
                     sheet.add_image(img, sheet.cell(row, col).coordinate)
                     cell_font = openpyxl.styles.Font(size='15')
