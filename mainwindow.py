@@ -58,6 +58,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.ui.download_progress_bar.setHidden(True)
 
+            if self.settings.language == Text.Lang.EN:
+                self.ui.english_language_action.setChecked(True)
+            else:
+                self.ui.russian_language_action.setChecked(True)
+            Text.set_language(self.settings.language)
+
             self.set_up_logger()
 
             self.ui.measures_table.setItemDelegate(TransparentPainterForView(self.ui.measures_table, "#d4d4ff"))
@@ -97,6 +103,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.choose_download_path_button.clicked.connect(self.choose_download_path_button_clicked)
         self.ui.choose_save_folder_path_edit.clicked.connect(self.choose_save_folder_path_button_clicked)
         self.ui.extra_params_button.clicked.connect(self.extra_params_button_clicked)
+
+        self.ui.russian_language_action.triggered.connect(self.russian_language_choosen)
+        self.ui.english_language_action.triggered.connect(self.english_language_choosen)
+
+        group = QtWidgets.QActionGroup(self)
+        group.addAction(self.ui.russian_language_action)
+        group.addAction(self.ui.english_language_action)
 
     def set_up_logger(self):
         log = qt_utils.QTextEditLogger(self.ui.log_text_edit)
@@ -404,6 +417,14 @@ class MainWindow(QtWidgets.QMainWindow):
         new_path = QtWidgets.QFileDialog.getExistingDirectory(self, Text.get("save_folder"), self.settings.save_folder)
         if new_path:
             self.ui.save_folder_edit.setText(new_path)
+
+    def russian_language_choosen(self):
+        Text.set_language(Text.Lang.RU)
+        self.settings.language = int(Text.Lang.RU)
+
+    def english_language_choosen(self):
+        Text.set_language(Text.Lang.EN)
+        self.settings.language = int(Text.Lang.EN)
 
     def open_about(self):
         about_dialog = AboutDialog(self)

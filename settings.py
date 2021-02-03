@@ -8,6 +8,7 @@ def get_ini_settings():
         QtSettings.VariableInfo(a_name="path", a_section="PARAMETERS", a_type=QtSettings.ValueType.STRING),
         QtSettings.VariableInfo(a_name="name_template", a_section="PARAMETERS", a_type=QtSettings.ValueType.STRING),
         QtSettings.VariableInfo(a_name="save_folder", a_section="PARAMETERS", a_type=QtSettings.ValueType.STRING),
+        QtSettings.VariableInfo(a_name="language", a_section="PARAMETERS", a_type=QtSettings.ValueType.INT),
         # QtSettings.VariableInfo(a_name="log_scale_enabled", a_section="PARAMETERS", a_type=QtSettings.ValueType.INT),
         # QtSettings.VariableInfo(a_name="graph_points_count", a_section="PARAMETERS", a_type=QtSettings.ValueType.INT),
         # QtSettings.VariableInfo(a_name="fixed_step_list", a_section="PARAMETERS", a_type=QtSettings.ValueType.LIST_FLOAT,
