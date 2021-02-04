@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 import logging
 import shutil
 import socket
+import sys
 import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -88,7 +89,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.close()
 
     def install_translator(self, a_language: Text.Lang):
-        self.translator.load(Text.LANG_TO_QT_TRANSLATE[a_language])
+        try:
+            # Для программы, собранной pyinstaller
+            base_path = sys._MEIPASS
+        except AttributeError:
+            base_path = "."
+
+        translate_file = Text.LANG_TO_QT_TRANSLATE[a_language]
+        self.translator.load(os.path.join(base_path, translate_file))
         QtWidgets.QApplication.instance().installTranslator(self.translator)
         self.ui.retranslateUi(self)
         Text.set_language(a_language)
