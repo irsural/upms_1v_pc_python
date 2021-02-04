@@ -1,5 +1,5 @@
 from logging.handlers import RotatingFileHandler
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import logging
 import shutil
 import socket
@@ -292,6 +292,61 @@ class MainWindow(QtWidgets.QMainWindow):
             number += 1
         return f"{name}{a_extension}"
 
+    @staticmethod
+    def insert_upms_measures_into_sheet(a_workbook: openpyxl.Workbook, a_sheet_name,
+                                        a_upms_measures: List[UpmsMeasure]):
+        sheet = a_workbook.get_sheet_by_name(a_sheet_name)
+        for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures) + 1, min_row=1, max_row=5)):
+            column[0].value = a_upms_measures[idx].id
+            column[1].value = a_upms_measures[idx].date
+            column[2].value = a_upms_measures[idx].interval
+            column[3].value = a_upms_measures[idx].result
+            column[4].value = a_upms_measures[idx].comment
+
+    @staticmethod
+    def insert_photos_into_sheet(a_photos_path: str, a_workbook: openpyxl.Workbook, a_sheet_name,
+                                 a_upms_measures: List[UpmsMeasure]):
+        if a_sheet_name in a_workbook.sheetnames:
+            sheet = a_workbook.get_sheet_by_name(a_sheet_name)
+        else:
+            sheet = a_workbook.create_sheet(a_sheet_name)
+
+        vertical_start = 3
+        vertical_step = 27
+
+        horizontal_start = 2
+        horizontal_step = 9
+        for idx, upms_measure in enumerate(a_upms_measures):
+            photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
+            try:
+                img = openpyxl.drawing.image.Image(photo_path)
+                new_height = img.height * 2 / 3
+                new_width = img.width * 2 / 3
+                img.height = new_height
+                img.width = new_width
+
+                row = vertical_start + idx // 2 * vertical_step if idx % 2 == 0 else \
+                    vertical_start + idx // 2 * vertical_step + 1
+                col = horizontal_start if idx % 2 == 0 else \
+                    (horizontal_start + horizontal_step)
+
+                sheet.add_image(img, sheet.cell(row, col).coordinate)
+                cell_font = openpyxl.styles.Font(size='15')
+                sheet.cell(row - 1, col, value=Text.get("measure").format(upms_measure.id)).font = cell_font
+            except FileNotFoundError:
+                logging.warning(f"File {photo_path} is not found")
+
+    @staticmethod
+    def insert_extra_parameters_into_sheet(a_workbook: openpyxl.Workbook, a_sheet_name,
+                                           a_extra_parameters: List[Tuple[str, str]]):
+        sheet = a_workbook.get_sheet_by_name(a_sheet_name)
+        row = 8
+        for parameter, value in a_extra_parameters:
+            sheet.cell(row, 1).value = parameter
+            sheet.cell(row, 2).value = value
+            sheet.row_dimensions[row].height = 30
+            row += 1
+
     @exception_decorator
     def create_report(self, a_name_template, a_save_folder, a_template_path, a_photos_path,
                       a_upms_measures: List[UpmsMeasure]):
@@ -313,43 +368,9 @@ class MainWindow(QtWidgets.QMainWindow):
             data_sheet_exists = False
 
         if data_sheet_exists:
-            sheet = wb.get_sheet_by_name(data_sheet)
-            for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures) + 1, min_row=1, max_row=5)):
-                column[0].value = a_upms_measures[idx].id
-                column[1].value = a_upms_measures[idx].date
-                column[2].value = a_upms_measures[idx].interval
-                column[3].value = a_upms_measures[idx].result
-                column[4].value = a_upms_measures[idx].comment
-
-            if photo_sheet in wb.sheetnames:
-                sheet = wb.get_sheet_by_name(photo_sheet)
-            else:
-                sheet = wb.create_sheet(photo_sheet)
-
-            vertical_start = 3
-            vertical_step = 27
-
-            horizontal_start = 2
-            horizontal_step = 9
-            for idx, upms_measure in enumerate(a_upms_measures):
-                photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
-                try:
-                    img = openpyxl.drawing.image.Image(photo_path)
-                    new_height = img.height * 2/3
-                    new_width = img.width * 2/3
-                    img.height = new_height
-                    img.width = new_width
-
-                    row = vertical_start + idx // 2 * vertical_step if idx % 2 == 0 else \
-                        vertical_start + idx // 2 * vertical_step + 1
-                    col = horizontal_start if idx % 2 == 0 else \
-                        (horizontal_start + horizontal_step)
-
-                    sheet.add_image(img, sheet.cell(row, col).coordinate)
-                    cell_font = openpyxl.styles.Font(size='15')
-                    sheet.cell(row - 1, col, value=Text.get("measure").format(upms_measure.id)).font = cell_font
-                except FileNotFoundError:
-                    logging.warning(f"File {photo_path} is not found")
+            self.insert_upms_measures_into_sheet(wb, data_sheet, a_upms_measures)
+            self.insert_extra_parameters_into_sheet(wb, data_sheet, self.db.get_parameters())
+            self.insert_photos_into_sheet(a_photos_path, wb, photo_sheet, a_upms_measures)
 
             wb.save(report_path)
             wb.close()
