@@ -13,6 +13,7 @@ from irspy.utils import exception_decorator, exception_decorator_print
 from irspy.settings_ini_parser import BadIniException
 from irspy.qt import qt_utils
 
+from extra_parameters_dialog import ExtraParametersDialog
 from ui.py.mainwindow import Ui_MainWindow as MainForm
 from result_input_dialog import ResultInputDialog
 from upms_db_model import UpmsDatabaseModel
@@ -407,8 +408,14 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
-    def extra_params_button_clicked(self):
-        pass
+    def extra_params_button_clicked(self, _):
+        old_parameters = self.db.get_parameters()
+        dialog = ExtraParametersDialog(old_parameters, self.settings)
+        res = dialog.exec()
+        if res == QtWidgets.QDialog.Accepted:
+            new_parameters = dialog.get_parameters()
+            self.db.set_parameters(new_parameters)
+        dialog.close()
 
     def choose_download_path_button_clicked(self):
         new_path = QtWidgets.QFileDialog.getExistingDirectory(self, Text.get("download_folder"), self.settings.path)

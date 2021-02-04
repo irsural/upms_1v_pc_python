@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 import sqlite3
 
 from upms_measure import UpmsMeasure
@@ -19,6 +19,14 @@ class UpmsDatabase:
                 interval text,
                 result text,
                 other text
+            )"""
+        )
+
+        self.cursor.execute(
+            """CREATE TABLE IF NOT EXISTS extra_parameters (
+                id integer PRIMARY KEY AUTOINCREMENT,
+                parameter text,
+                value text
             )"""
         )
 
@@ -48,6 +56,16 @@ class UpmsDatabase:
                                                                   a_upms_measure.date, a_upms_measure.comment,
                                                                   a_upms_measure.interval, a_upms_measure.result,
                                                                   a_upms_measure.other))
+
+    def set_parameters(self, a_parameters: List[Tuple[str, str]]):
+        with self.conn:
+            self.cursor.execute("DELETE FROM extra_parameters")
+            self.cursor.executemany("INSERT INTO extra_parameters (parameter, value) VALUES (?, ?)", a_parameters)
+
+    def get_parameters(self) -> List[Tuple[str, str]]:
+        self.cursor.execute("SELECT parameter, value FROM extra_parameters ORDER BY id")
+        parameters = self.cursor.fetchall()
+        return parameters
 
     def remove(self, a_id: UpmsMeasure):
         with self.conn:
