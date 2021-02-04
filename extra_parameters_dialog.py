@@ -21,7 +21,6 @@ class ExtraParametersDialog(QtWidgets.QDialog):
 
         self.ui = ExtraParametersForm()
         self.ui.setupUi(self)
-        self.show()
 
         self.settings = a_settings
 

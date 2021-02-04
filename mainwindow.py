@@ -59,11 +59,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.ui.download_progress_bar.setHidden(True)
 
+            self.translator = QtCore.QTranslator(QtWidgets.QApplication.instance())
+            self.install_translator(self.settings.language)
+
             if self.settings.language == Text.Lang.EN:
                 self.ui.english_language_action.setChecked(True)
             else:
                 self.ui.russian_language_action.setChecked(True)
-            Text.set_language(self.settings.language)
 
             self.set_up_logger()
 
@@ -82,12 +84,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.show()
             self.connect_all()
-
-            self.tick_timer = QtCore.QTimer(self)
-            self.tick_timer.timeout.connect(self.tick)
-            self.tick_timer.start(10)
         else:
             self.close()
+
+    def install_translator(self, a_language: Text.Lang):
+        self.translator.load(Text.LANG_TO_QT_TRANSLATE[a_language])
+        QtWidgets.QApplication.instance().installTranslator(self.translator)
+        self.ui.retranslateUi(self)
+        Text.set_language(a_language)
 
     def connect_all(self):
         self.ui.open_about_action.triggered.connect(self.open_about)
@@ -105,8 +109,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.choose_save_folder_path_edit.clicked.connect(self.choose_save_folder_path_button_clicked)
         self.ui.extra_params_button.clicked.connect(self.extra_params_button_clicked)
 
-        self.ui.russian_language_action.triggered.connect(self.russian_language_choosen)
-        self.ui.english_language_action.triggered.connect(self.english_language_choosen)
+        self.ui.russian_language_action.triggered.connect(self.russian_language_chosen)
+        self.ui.english_language_action.triggered.connect(self.english_language_chosen)
 
         group = QtWidgets.QActionGroup(self)
         group.addAction(self.ui.russian_language_action)
@@ -130,10 +134,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.proxy.setSourceModel(self.measures_table_model)
         self.ui.measures_table.setModel(self.proxy)
         self.ui.measures_table.resizeRowsToContents()
-
-    @exception_decorator
-    def tick(self):
-        pass
 
     def download_measures_list(self, a_download_filepath: str) -> bool:
         result = False
@@ -189,7 +189,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 upms_files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
                 self.ui.download_progress_bar.setHidden(False)
                 for number, measure in enumerate(measures_list):
-                    self.ui.download_progress_bar.setValue(number / (len(upms_files_list) - 1) * self.ui.download_progress_bar.maximum())
+                    self.ui.download_progress_bar.setValue(
+                        number / (len(upms_files_list) - 1) * self.ui.download_progress_bar.maximum())
 
                     measure_params = [meas.strip() for meas in measure.strip().split(',')]
                     upms_measure = UpmsMeasure(*measure_params)
@@ -296,7 +297,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def insert_upms_measures_into_sheet(a_workbook: openpyxl.Workbook, a_sheet_name,
                                         a_upms_measures: List[UpmsMeasure]):
         sheet = a_workbook.get_sheet_by_name(a_sheet_name)
-        for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures) + 1, min_row=1, max_row=5)):
+        for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures)+1, min_row=1, max_row=5)):
             column[0].value = a_upms_measures[idx].id
             column[1].value = a_upms_measures[idx].date
             column[2].value = a_upms_measures[idx].interval
@@ -404,13 +405,13 @@ class MainWindow(QtWidgets.QMainWindow):
                                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                     else:
                         QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
-                                                          QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                 else:
                     QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("save_folder_error"),
-                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             else:
                 QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("same_type_err"),
-                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
@@ -449,12 +450,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if new_path:
             self.ui.save_folder_edit.setText(new_path)
 
-    def russian_language_choosen(self):
-        Text.set_language(Text.Lang.RU)
+    def russian_language_chosen(self):
+        self.install_translator(Text.Lang.RU)
         self.settings.language = int(Text.Lang.RU)
 
-    def english_language_choosen(self):
-        Text.set_language(Text.Lang.EN)
+    def english_language_chosen(self):
+        self.install_translator(Text.Lang.EN)
         self.settings.language = int(Text.Lang.EN)
 
     def open_about(self):

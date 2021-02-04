@@ -2,6 +2,7 @@ from irspy.qt import ui_to_py
 ui_to_py.convert_resources("../irspy/qt/resources", ".")
 ui_to_py.convert_ui("./ui", "./ui/py")
 ui_to_py.convert_ui("../irspy/qt/custom_widgets/ui_forms", "../irspy/qt/custom_widgets/ui_py")
+ui_to_py.create_translate("./ui/py", "./ui/ts")
 
 
 def main():
@@ -16,11 +17,6 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setFont(QtGui.QFont("MS Shell Dlg 2", 10))
-
-    translator = QtCore.QTranslator(app)
-    path = QtCore.QLibraryInfo.location(QtCore.QLibraryInfo.TranslationsPath)
-    translator.load("/".join([path, "qtbase_ru.qm"]))
-    app.installTranslator(translator)
 
     w = MainWindow()
     sys.exit(app.exec())

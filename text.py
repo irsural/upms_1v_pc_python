@@ -7,6 +7,12 @@ class Text:
         EN = 1,
         DEFAULT = RU
 
+    LANG_TO_QT_TRANSLATE = {
+        Lang.RU: "translate_ru",
+        Lang.EN: "translate_en",
+        Lang.DEFAULT: "translate_ru",
+    }
+
     language = Lang.DEFAULT
 
     strings = {
