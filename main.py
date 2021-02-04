@@ -2,7 +2,7 @@ from irspy.qt import ui_to_py
 ui_to_py.convert_resources("../irspy/qt/resources", ".")
 ui_to_py.convert_ui("./ui", "./ui/py")
 ui_to_py.convert_ui("../irspy/qt/custom_widgets/ui_forms", "../irspy/qt/custom_widgets/ui_py")
-ui_to_py.create_translate("./ui/py", "./ui/ts")
+ui_to_py.create_translate("./ui/py", "./ui/ts/translate_en.ts")
 
 
 def main():
