@@ -377,6 +377,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("success_generated").format(report_path),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+            os.startfile(report_path)
         else:
             QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("data_sheet_not_found").format(report_path),
                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
