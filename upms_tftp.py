@@ -14,7 +14,7 @@ __exclude_words = ["ls", "check", "copy", "System"]
 def get_files_list(a_ip: str) -> Optional[List[str]]:
     tftp_client = tftpy.TftpClient(a_ip, 69)
     try:
-        tftp_client.download("ls.txt", __files_list_filename, timeout=5)
+        tftp_client.download("ls.txt", __files_list_filename, timeout=1)
     except tftpy.TftpTimeout:
         logging.error(Text.get("get_files_list_err"))
         if os.path.isfile(__files_list_filename):
@@ -45,7 +45,7 @@ def download_file_by_tftp(a_ip: str, a_filename: str, a_dst_filepath: str, a_tri
     try_number = 0
     while try_number < a_tries_count:
         try:
-            tftp_client.download(a_filename, a_dst_filepath, timeout=5)
+            tftp_client.download(a_filename, a_dst_filepath, timeout=1)
             return True
         except tftpy.TftpTimeout:
             try_number += 1
