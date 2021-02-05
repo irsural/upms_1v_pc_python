@@ -171,11 +171,11 @@ class Ui_MainWindow(object):
         self.create_report_button.setText(_translate("MainWindow", "Сформировать\n"
 "протокол"))
         self.download_progress_bar.setFormat(_translate("MainWindow", "%p%"))
-        self.label_2.setText(_translate("MainWindow", "Каталог для\n"
+        self.label_2.setText(_translate("MainWindow", "Папка для\n"
 "загрузки файлов:"))
         self.label_3.setText(_translate("MainWindow", "Шаблон для\n"
 "имени протокола"))
-        self.label_4.setText(_translate("MainWindow", "Каталог для\n"
+        self.label_4.setText(_translate("MainWindow", "Папка для\n"
 "сохранения протоколов"))
         self.label.setText(_translate("MainWindow", "IP-адрес:"))
         self.choose_download_path_button.setText(_translate("MainWindow", "..."))

@@ -17,5 +17,5 @@ current_config.json
 /tests
 /test_protocols
 dist/*
-!dist/SpectrumReader.exe
+!dist/upms_1v_pc.exe
 !dist/settings.ini
