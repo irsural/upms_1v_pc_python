@@ -1,103 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="en" sourcelanguage="ru_RU">
+<!DOCTYPE TS><TS version="2.0">
 <context>
     <name>MainWindow</name>
-    <message>
-        <location filename="../py/mainwindow.py" line="162"/>
-        <source>????-1? ??</source>
-        <translation type="obsolete">UPMS-1V PC</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="163"/>
-        <source>??????? ??????????
-? ?????????</source>
-        <translation type="obsolete">Download results 
-from device</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="165"/>
-        <source>??????????????
-?????????</source>
-        <translation type="obsolete">Extra
-options</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="167"/>
-        <source>??????
-?????????</source>
-        <translation type="obsolete">Enter
-result</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="169"/>
-        <source>???????
-??????????</source>
-        <translation type="obsolete">Remove
-selected</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="171"/>
-        <source>????????????
-????????</source>
-        <translation type="obsolete">Generate
-report</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="173"/>
-        <source>%p%</source>
-        <translation>%p%</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="174"/>
-        <source>??????? ???
-???????? ??????:</source>
-        <translation type="obsolete">File download
-directory:</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="176"/>
-        <source>?????? ???
-????? ?????????</source>
-        <translation type="obsolete">Report name 
-template</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="178"/>
-        <source>??????? ???
-?????????? ??????????</source>
-        <translation type="obsolete">Directory for 
-saving reports</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="180"/>
-        <source>IP-?????:</source>
-        <translation type="obsolete">IP-address:</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="182"/>
-        <source>...</source>
-        <translation>...</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="186"/>
-        <source>???????</source>
-        <translation type="obsolete">Русский</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="184"/>
-        <source>????</source>
-        <translation type="obsolete">Language</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="185"/>
-        <source>? ?????????...</source>
-        <translation type="obsolete">About the program...</translation>
-    </message>
-    <message>
-        <location filename="../py/mainwindow.py" line="187"/>
-        <source>English</source>
-        <translation>English</translation>
-    </message>
     <message encoding="UTF-8">
         <location filename="../py/mainwindow.py" line="162"/>
         <source>УПМС-1В ПК</source>
@@ -133,6 +37,11 @@ saving reports</translation>
 протокол</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../py/mainwindow.py" line="173"/>
+        <source>%p%</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message encoding="UTF-8">
         <location filename="../py/mainwindow.py" line="174"/>
         <source>Папка для
@@ -156,6 +65,11 @@ saving reports</translation>
         <source>IP-адрес:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../py/mainwindow.py" line="182"/>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message encoding="UTF-8">
         <location filename="../py/mainwindow.py" line="183"/>
         <source>Справка</source>
@@ -176,32 +90,22 @@ saving reports</translation>
         <source>Русский</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../py/mainwindow.py" line="187"/>
+        <source>English</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>about_dialog</name>
-    <message>
+    <message encoding="UTF-8">
         <location filename="../py/about_dialog.py" line="70"/>
-        <source>? ?????????</source>
-        <translation type="obsolete">About the program</translation>
+        <source>О программе</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../py/about_dialog.py" line="71"/>
         <source>UPMS-1V PC</source>
-        <translation>UPMS-1V PC</translation>
-    </message>
-    <message>
-        <location filename="../py/about_dialog.py" line="72"/>
-        <source>?????? ?????????: </source>
-        <translation type="obsolete">Version: </translation>
-    </message>
-    <message>
-        <location filename="../py/about_dialog.py" line="73"/>
-        <source>???????</source>
-        <translation type="obsolete">Close</translation>
-    </message>
-    <message encoding="UTF-8">
-        <location filename="../py/about_dialog.py" line="70"/>
-        <source>О программе</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
@@ -215,28 +119,8 @@ saving reports</translation>
         <translation type="unfinished"></translation>
     </message>
 </context>
-<context>
+<context encoding="UTF-8">
     <name>extra_parameters_dialog</name>
-    <message>
-        <location filename="../py/extra_parameters_dialog.py" line="94"/>
-        <source>?????????????? ?????????</source>
-        <translation type="obsolete">Extra options</translation>
-    </message>
-    <message>
-        <location filename="../py/extra_parameters_dialog.py" line="98"/>
-        <source>????????</source>
-        <translation type="obsolete">Value</translation>
-    </message>
-    <message>
-        <location filename="../py/extra_parameters_dialog.py" line="99"/>
-        <source>??</source>
-        <translation type="obsolete">Ok</translation>
-    </message>
-    <message>
-        <location filename="../py/extra_parameters_dialog.py" line="100"/>
-        <source>??????</source>
-        <translation type="obsolete">Cancel</translation>
-    </message>
     <message encoding="UTF-8">
         <location filename="../py/extra_parameters_dialog.py" line="94"/>
         <source>Дополнительные параметры</source>
@@ -263,33 +147,8 @@ saving reports</translation>
         <translation type="unfinished"></translation>
     </message>
 </context>
-<context>
+<context encoding="UTF-8">
     <name>result_input_dialog</name>
-    <message>
-        <location filename="../py/result_input_dialog.py" line="106"/>
-        <source>???? ??????????</source>
-        <translation type="obsolete">Enter result</translation>
-    </message>
-    <message>
-        <location filename="../py/result_input_dialog.py" line="107"/>
-        <source>????????</source>
-        <translation type="obsolete">Interval</translation>
-    </message>
-    <message>
-        <location filename="../py/result_input_dialog.py" line="108"/>
-        <source>?????????</source>
-        <translation type="obsolete">Result</translation>
-    </message>
-    <message>
-        <location filename="../py/result_input_dialog.py" line="109"/>
-        <source>????????? ?</source>
-        <translation type="obsolete">Measurement #</translation>
-    </message>
-    <message>
-        <location filename="../py/result_input_dialog.py" line="110"/>
-        <source>??????</source>
-        <translation type="obsolete">Cancel</translation>
-    </message>
     <message encoding="UTF-8">
         <location filename="../py/result_input_dialog.py" line="106"/>
         <source>Ввод результата</source>
