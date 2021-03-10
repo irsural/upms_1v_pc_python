@@ -63,7 +63,22 @@ class UpmsDatabaseModel(QAbstractTableModel):
             return QVariant()
 
         if orientation == QtCore.Qt.Horizontal:
-            return UpmsDatabaseModel.COLUMN_TO_NAME[UpmsDatabaseModel.Column(section)]
+            if section == UpmsDatabaseModel.Column.ID:
+                text = Text.get("id")
+            elif section == UpmsDatabaseModel.Column.USER_ID:
+                text = Text.get("uid_2")
+            elif section == UpmsDatabaseModel.Column.TYPE:
+                text = Text.get("type")
+            elif section == UpmsDatabaseModel.Column.DATE:
+                text = Text.get("date")
+            elif section == UpmsDatabaseModel.Column.COMMENT:
+                text = Text.get("comment")
+            elif section == UpmsDatabaseModel.Column.INTERVAL:
+                text = Text.get("interval")
+            else:  # section == UpmsDatabaseModel.Column.RESULT:
+                text = Text.get("result")
+
+            return text
 
         return QVariant()
 
