@@ -112,7 +112,12 @@ class UpmsDatabaseModel(QAbstractTableModel):
                 UpmsDatabaseModel.COLUMN_TO_UPMS_MEASURE_ATTR[index.column()])
 
             if index.column() == UpmsDatabaseModel.Column.TYPE:
-                cell_value = UpmsMeasure.TYPE_TO_STR[cell_value]
+                type_to_str = {
+                    UpmsMeasure.MeasureType.MECH_STOPWATCH: Text.get("m_stopwatch"),
+                    UpmsMeasure.MeasureType.ELEC_STOPWATCH: Text.get("e_stopwatch"),
+                    UpmsMeasure.MeasureType.CLOCK: Text.get("clock"),
+                }
+                cell_value = type_to_str[cell_value]
 
             return str(cell_value)
 
