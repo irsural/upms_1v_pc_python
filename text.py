@@ -30,8 +30,8 @@ class Text:
         "result": ["Результат", "Result"],
         "other": ["Другое", "Other"],
         "measure": ["Номер измерения: {}", "Measurement # {}"],
-        "download_folder": ["Папка для загрузки файлов", "Directory for downloading files"],
-        "save_folder": ["Папка для сохранения протоколов", "Directory for saving reports"],
+        "download_folder": ["Папка для загрузки файлов", "Download location"],
+        "save_folder": ["Папка для сохранения протоколов", "Protocols’ location"],
 
         "warning": ["Предупреждение", "Warning"],
         "download_canceled": ["Скачивание отменено", "Download cancelled"],
@@ -39,8 +39,8 @@ class Text:
                           "Entry with id={} already exists. Overwrite?"],
 
         "err": ["Ошибка", "Error"],
-        "path_err": ["Неверно указана папка для загрузки файлов", "Incorrect path to download folder"],
-        "save_folder_error": ["Неверно указана папка для сохранения протоколов", "Incorrect path to save folder"],
+        "path_err": ["Неверно указана папка для загрузки файлов", "Invalid download location"],
+        "save_folder_error": ["Неверно указана папка для сохранения протоколов", "Invalid protocols’ location"],
         "templates_are_not_found": ['Файл шаблона не найден', 'Template file not found'],
         "ini_err": ['Файл конфигурации поврежден. Пожалуйста, удалите файл "settings.ini" и запустите программу заново',
                     'Configuration file is corrupted. Please, delete the "settings.ini file and restart the program"'],

@@ -26,6 +26,9 @@ import upms_tftp
 import settings
 
 
+ENGLISH_VERSION = True
+
+
 class MainWindow(QtWidgets.QMainWindow):
     measures_filename = "main_table.csv"
     default_name_template = "report"
@@ -59,6 +62,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.restore_qwidget_state(self.ui.measures_table)
 
             self.ui.download_progress_bar.setHidden(True)
+
+            if ENGLISH_VERSION:
+                self.ui.russian_language_action.setVisible(False)
+                self.settings.language = Text.Lang.EN
 
             self.translator = QtCore.QTranslator(QtWidgets.QApplication.instance())
             self.install_translator(self.settings.language)
