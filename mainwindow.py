@@ -1,12 +1,12 @@
 from logging.handlers import RotatingFileHandler
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 import logging
 import shutil
 import socket
 import sys
 import os
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui, QtNetwork
 import openpyxl
 
 from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForView
@@ -80,7 +80,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.measures_table.setItemDelegate(TransparentPainterForView(self.ui.measures_table, "#d4d4ff"))
             self.ui.download_path_edit.setText(self.settings.save_folder_path)
 
-            self.ui.ip_edit.setText(self.settings.ip)
+            self.ui.ip_combobox.setEditText(self.settings.ip)
             self.ui.download_path_edit.setText(self.settings.path)
             self.ui.name_template_edit.setText(self.settings.name_template)
             self.ui.save_folder_edit.setText(self.settings.save_folder)
@@ -90,8 +90,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.proxy: Optional[QtCore.QSortFilterProxyModel] = None
             self.update_model()
 
+            self.bcast_sockets: Dict[str, QtNetwork.QUdpSocket] = {}
+            self.get_broadcast_ips()
+
             self.show()
             self.connect_all()
+
+            self.ui.get_ip_button.click()
         else:
             self.close()
 
@@ -111,10 +116,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def connect_all(self):
         self.ui.open_about_action.triggered.connect(self.open_about)
         self.ui.download_from_upms_button.clicked.connect(self.download_from_upms_button_clicked)
-        self.ui.ip_edit.textChanged.connect(self.ip_changed)
+        self.ui.ip_combobox.editTextChanged.connect(self.ip_changed)
         self.ui.download_path_edit.textChanged.connect(self.path_changed)
         self.ui.name_template_edit.textChanged.connect(self.name_template_changed)
         self.ui.save_folder_edit.textChanged.connect(self.save_folder_changed)
+
+        self.ui.get_ip_button.clicked.connect(self.get_ip_button_clicked)
 
         self.ui.input_result_button.clicked.connect(self.input_result_button_clicked)
         self.ui.create_report_button.clicked.connect(self.create_report_button_clicked)
@@ -126,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.russian_language_action.triggered.connect(self.russian_language_chosen)
         self.ui.english_language_action.triggered.connect(self.english_language_chosen)
+
 
         group = QtWidgets.QActionGroup(self)
         group.addAction(self.ui.russian_language_action)
@@ -152,7 +160,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def download_measures_list(self, a_download_filepath: str) -> bool:
         result = False
-        ip = self.ui.ip_edit.text()
+        ip = self.ui.ip_combobox.currentText()
         try:
             socket.inet_aton(ip)
         except socket.error:
@@ -160,7 +168,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
             try:
-                files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
+                files_list = upms_tftp.get_files_list(self.ui.ip_combobox.currentText())
             except ConnectionResetError:
                 QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("connection_err"),
                                                QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
@@ -187,7 +195,7 @@ class MainWindow(QtWidgets.QMainWindow):
         download_path = a_download_folder.rstrip(os.sep) + os.sep + photo_name
         if photo_name in a_files_list:
             logging.warning(f"Download {photo_name}")
-            upms_tftp.download_file_by_tftp(self.ui.ip_edit.text(), photo_name, download_path)
+            upms_tftp.download_file_by_tftp(self.ui.ip_combobox.currentText(), photo_name, download_path)
 
     @exception_decorator
     def download_from_upms_button_clicked(self, _):
@@ -201,7 +209,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     measures_list = [file for idx, file in enumerate(measures_list_file) if idx != 0]
 
                 update_all = False
-                upms_files_list = upms_tftp.get_files_list(self.ui.ip_edit.text())
+                upms_files_list = upms_tftp.get_files_list(self.ui.ip_combobox.currentText())
                 self.ui.download_progress_bar.setHidden(False)
                 for number, measure in enumerate(measures_list):
                     self.ui.download_progress_bar.setValue(
@@ -261,6 +269,39 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def save_folder_changed(self, a_save_folder):
         self.settings.save_folder = a_save_folder
+
+    def get_broadcast_ips(self):
+        localhost = QtNetwork.QHostAddress(QtNetwork.QHostAddress.LocalHost)
+        for _if in QtNetwork.QNetworkInterface.allInterfaces():
+            for addr in _if.addressEntries():
+                if addr.ip().protocol() == QtNetwork.QAbstractSocket.IPv4Protocol and not addr.netmask().isNull() and \
+                        addr.ip() != localhost:
+                    bcast = QtNetwork.QHostAddress(addr.ip().toIPv4Address() |
+                                                   ((1 << 32) - 1 - addr.netmask().toIPv4Address()))  # bit not
+                    udp_sock = QtNetwork.QUdpSocket(self)
+                    udp_sock.bind(addr.ip())
+
+                    self.bcast_sockets[bcast.toString()] = udp_sock
+                    udp_sock.readyRead.connect(self.read_ip_from_socket)
+
+    def get_ip_button_clicked(self):
+        for ip, sock in self.bcast_sockets.items():
+            sock.writeDatagram("upms_1v_get_ip".encode('ascii'), QtNetwork.QHostAddress(ip), 5007)
+
+    @exception_decorator
+    def read_ip_from_socket(self):
+        self.ui.ip_combobox.clear()
+        for ip, sock in self.bcast_sockets.items():
+            while sock.hasPendingDatagrams():
+                datagram = sock.receiveDatagram()
+                data = bytes(datagram.data()).decode(encoding='ascii')
+                ip, _ = data.split(';')
+                try:
+                    socket.inet_aton(ip)
+                    self.ui.ip_combobox.addItem(ip)
+                    print(ip)
+                except socket.error:
+                    logging.error(f"{ip} не является валидным ip адресом")
 
     @exception_decorator_print
     def input_result_button_clicked(self, _):
