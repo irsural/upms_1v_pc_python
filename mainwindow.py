@@ -21,6 +21,7 @@ from upms_db_model import UpmsDatabaseModel
 from upms_database import UpmsDatabase
 from about_dialog import AboutDialog
 from upms_measure import UpmsMeasure
+import protocol_generation as pg
 from text import Text
 import upms_tftp
 import settings
@@ -38,11 +39,6 @@ class MainWindow(QtWidgets.QMainWindow):
         UpmsMeasure.MeasureType.ELEC_STOPWATCH: ("./Templates/es_template.xlsx", "./Templates/es_template.ods"),
         UpmsMeasure.MeasureType.CLOCK: ("./Templates/clock_template.xlsx", "./Templates/clock_template.ods"),
     }
-
-    data_sheet_ru = "Данные"
-    photo_sheet_ru = "Фото"
-    data_sheet_en = "Data"
-    photo_sheet_en = "Photos"
 
     def __init__(self):
         super().__init__()
@@ -84,6 +80,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.download_path_edit.setText(self.settings.path)
             self.ui.name_template_edit.setText(self.settings.name_template)
             self.ui.save_folder_edit.setText(self.settings.save_folder)
+
+            self.ui.excel_protocol_checkbox.setChecked(self.settings.generate_excel)
+            self.ui.calc_protocol_checkbox.setChecked(self.settings.generate_calc)
 
             self.db = UpmsDatabase("database.db")
             self.measures_table_model: Optional[UpmsDatabaseModel] = None
@@ -134,6 +133,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.russian_language_action.triggered.connect(self.russian_language_chosen)
         self.ui.english_language_action.triggered.connect(self.english_language_chosen)
 
+        self.ui.excel_protocol_checkbox.toggled.connect(self.generate_excel_checkbox_toggled)
+        self.ui.calc_protocol_checkbox.toggled.connect(self.generate_calc_checkbox_toggled)
 
         group = QtWidgets.QActionGroup(self)
         group.addAction(self.ui.russian_language_action)
@@ -299,7 +300,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 try:
                     socket.inet_aton(ip)
                     self.ui.ip_combobox.addItem(ip)
-                    print(ip)
                 except socket.error:
                     logging.error(f"{ip} не является валидным ip адресом")
 
@@ -349,61 +349,6 @@ class MainWindow(QtWidgets.QMainWindow):
             number += 1
         return f"{name}{a_extension}"
 
-    @staticmethod
-    def insert_upms_measures_into_sheet(a_workbook: openpyxl.Workbook, a_sheet_name,
-                                        a_upms_measures: List[UpmsMeasure]):
-        sheet = a_workbook.get_sheet_by_name(a_sheet_name)
-        for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures)+1, min_row=1, max_row=5)):
-            column[0].value = a_upms_measures[idx].id
-            column[1].value = a_upms_measures[idx].date
-            column[2].value = a_upms_measures[idx].interval
-            column[3].value = a_upms_measures[idx].result
-            column[4].value = a_upms_measures[idx].comment
-
-    @staticmethod
-    def insert_photos_into_sheet(a_photos_path: str, a_workbook: openpyxl.Workbook, a_sheet_name,
-                                 a_upms_measures: List[UpmsMeasure]):
-        if a_sheet_name in a_workbook.sheetnames:
-            sheet = a_workbook.get_sheet_by_name(a_sheet_name)
-        else:
-            sheet = a_workbook.create_sheet(a_sheet_name)
-
-        vertical_start = 3
-        vertical_step = 27
-
-        horizontal_start = 2
-        horizontal_step = 9
-        for idx, upms_measure in enumerate(a_upms_measures):
-            photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
-            try:
-                img = openpyxl.drawing.image.Image(photo_path)
-                new_height = img.height * 2 / 3
-                new_width = img.width * 2 / 3
-                img.height = new_height
-                img.width = new_width
-
-                row = vertical_start + idx // 2 * vertical_step if idx % 2 == 0 else \
-                    vertical_start + idx // 2 * vertical_step + 1
-                col = horizontal_start if idx % 2 == 0 else \
-                    (horizontal_start + horizontal_step)
-
-                sheet.add_image(img, sheet.cell(row, col).coordinate)
-                cell_font = openpyxl.styles.Font(size='15')
-                sheet.cell(row - 1, col, value=Text.get("measure").format(upms_measure.id)).font = cell_font
-            except FileNotFoundError:
-                logging.warning(f"File {photo_path} is not found")
-
-    @staticmethod
-    def insert_extra_parameters_into_sheet(a_workbook: openpyxl.Workbook, a_sheet_name,
-                                           a_extra_parameters: List[Tuple[str, str]]):
-        sheet = a_workbook.get_sheet_by_name(a_sheet_name)
-        row = 8
-        for parameter, value in a_extra_parameters:
-            sheet.cell(row, 1).value = parameter
-            sheet.cell(row, 2).value = value
-            sheet.row_dimensions[row].height = 30
-            row += 1
-
     @exception_decorator
     def create_report(self, a_name_template, a_save_folder, a_template_path, a_photos_path,
                       a_upms_measures: List[UpmsMeasure]):
@@ -411,65 +356,63 @@ class MainWindow(QtWidgets.QMainWindow):
         report_path = a_save_folder.rstrip(os.sep) + os.sep + filename
         shutil.copyfile(a_template_path, report_path)
 
-        data_sheet = ""
-        photo_sheet = ""
-        data_sheet_exists = True
-        wb = openpyxl.load_workbook(report_path)
-        if self.data_sheet_ru in wb.sheetnames:
-            data_sheet = self.data_sheet_ru
-            photo_sheet = self.photo_sheet_ru
-        elif self.data_sheet_en in wb.sheetnames:
-            data_sheet = self.data_sheet_en
-            photo_sheet = self.photo_sheet_en
-        else:
-            data_sheet_exists = False
+        protocol_generators = []
+        if self.settings.generate_excel:
+            protocol_generators.append(pg.ExcelProtocolGenerator(report_path))
+        if self.settings.generate_calc:
+            protocol_generators.append(pg.CalcProtocolGenerator(report_path))
 
-        if data_sheet_exists:
-            self.insert_upms_measures_into_sheet(wb, data_sheet, a_upms_measures)
-            self.insert_extra_parameters_into_sheet(wb, data_sheet, self.db.get_parameters())
-            self.insert_photos_into_sheet(a_photos_path, wb, photo_sheet, a_upms_measures)
+        for protocol_gen in protocol_generators:
+            if protocol_gen.is_template_ok():
+                protocol_gen.insert_measures(a_upms_measures)
+                protocol_gen.insert_extra_parameters(self.db.get_parameters())
+                protocol_gen.insert_photos(a_photos_path, a_upms_measures)
 
-            wb.save(report_path)
-            wb.close()
+                protocol_gen.save()
 
-            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("success_generated").format(report_path),
-                                              QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-            os.startfile(report_path)
-        else:
-            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("data_sheet_not_found").format(report_path),
-                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-            wb.close()
+                QtWidgets.QMessageBox.information(self, Text.get("info"),
+                                                  Text.get("success_generated").format(report_path),
+                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                os.startfile(report_path)
+            else:
+                QtWidgets.QMessageBox.critical(self, Text.get("err"),
+                                               Text.get("data_sheet_not_found").format(report_path),
+                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
     def create_report_button_clicked(self, _):
-        rows = self.ui.measures_table.selectionModel().selectedRows()
-        if rows:
-            types = [self.measures_table_model.get_type(self.proxy.mapToSource(idx).row()) for idx in rows]
-            if len(types) == types.count(types[0]):
-                save_folder = self.ui.save_folder_edit.text()
-                if save_folder and os.path.isdir(save_folder):
-                    template_path = self.get_template_file(types[0])
-                    if template_path:
-                        if self.ui.download_path_edit.text():
-                            name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
-                                self.default_name_template
-                            upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
-                                             for idx in rows]
-                            self.create_report(name_template, save_folder, template_path,
-                                               self.ui.download_path_edit.text(), upms_measures)
+        if self.settings.generate_excel or self.settings.generace_calc:
+            rows = self.ui.measures_table.selectionModel().selectedRows()
+            if rows:
+                types = [self.measures_table_model.get_type(self.proxy.mapToSource(idx).row()) for idx in rows]
+                if len(types) == types.count(types[0]):
+                    save_folder = self.ui.save_folder_edit.text()
+                    if save_folder and os.path.isdir(save_folder):
+                        template_path = self.get_template_file(types[0])
+                        if template_path:
+                            if self.ui.download_path_edit.text():
+                                name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
+                                    self.default_name_template
+                                upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
+                                                 for idx in rows]
+                                self.create_report(name_template, save_folder, template_path,
+                                                   self.ui.download_path_edit.text(), upms_measures)
+                            else:
+                                QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
+                                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                         else:
-                            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
+                            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
                                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                     else:
-                        QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
+                        QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("save_folder_error"),
                                                        QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                 else:
-                    QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("save_folder_error"),
+                    QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("same_type_err"),
                                                    QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             else:
-                QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("same_type_err"),
-                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
+                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
         else:
-            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
+            QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("no_protocol_format"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
     def remove_selected_button_clicked(self, _):
@@ -513,6 +456,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def english_language_chosen(self):
         self.install_translator(Text.Lang.EN)
         self.settings.language = int(Text.Lang.EN)
+
+    def generate_excel_checkbox_toggled(self, a_enable):
+        self.settings.generate_excel = int(a_enable)
+
+    def generate_calc_checkbox_toggled(self, a_enable):
+        self.settings.generate_calc = int(a_enable)
 
     def open_about(self):
         about_dialog = AboutDialog(self)

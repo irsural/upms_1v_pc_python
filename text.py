@@ -65,6 +65,7 @@ class Text:
         "confirm": ["Подтвердите действие", "Confirm action"],
         "delete_confirm": ["Вы действительно хотите удалить выбранные измерения?",
                            "Are you sure you want to delete the selected measurements?"],
+        "no_protocol_format": ["Формат протокола не выбран", "The protocol format is not selected"],
     }
 
     @staticmethod
