@@ -51,11 +51,11 @@ class UpmsDatabase:
 
     def update(self, a_upms_measure: UpmsMeasure):
         with self.conn:
-            self.cursor.execute(f"UPDATE measures SET user_id=?, type=?, date=?, comment=?, interval=?, result=?, other=?"
-                                f"WHERE id={a_upms_measure.id}", (a_upms_measure.user_id, a_upms_measure.type,
-                                                                  a_upms_measure.date, a_upms_measure.comment,
-                                                                  a_upms_measure.interval, a_upms_measure.result,
-                                                                  a_upms_measure.other))
+            self.cursor.execute("UPDATE measures SET user_id=?, type=?, date=?, comment=?, interval=?, result=?, other=?"
+                                "WHERE id={}".format(a_upms_measure.id), (a_upms_measure.user_id, a_upms_measure.type,
+                                                                          a_upms_measure.date, a_upms_measure.comment,
+                                                                          a_upms_measure.interval,
+                                                                          a_upms_measure.result, a_upms_measure.other))
 
     def set_parameters(self, a_parameters: List[Tuple[str, str]]):
         with self.conn:
@@ -69,4 +69,4 @@ class UpmsDatabase:
 
     def remove(self, a_id: UpmsMeasure):
         with self.conn:
-            self.cursor.execute(f"DELETE FROM measures WHERE id={a_id}")
+            self.cursor.execute("DELETE FROM measures WHERE id={}".format(a_id))

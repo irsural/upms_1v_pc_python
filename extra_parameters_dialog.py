@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from enum import IntEnum, auto
+from enum import IntEnum
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 
@@ -14,7 +14,7 @@ from text import Text
 class ExtraParametersDialog(QtWidgets.QDialog):
     class Column(IntEnum):
         PARAMETER = 0
-        VALUE = auto()
+        VALUE = 1
 
     def __init__(self, a_init_parameters: List[Tuple[str, str]], a_settings: QtSettings,  a_parent=None):
         super().__init__(a_parent)

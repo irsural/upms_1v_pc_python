@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import IntEnum
 from copy import deepcopy
 from typing import List
 import logging
@@ -17,13 +17,13 @@ from text import Text
 class UpmsDatabaseModel(QAbstractTableModel):
     class Column(IntEnum):
         ID = 0
-        USER_ID = auto()
-        TYPE = auto()
-        DATE = auto()
-        COMMENT = auto()
-        INTERVAL = auto()
-        RESULT = auto()
-        COUNT = auto()
+        USER_ID = 1
+        TYPE = 2
+        DATE = 3
+        COMMENT = 4
+        INTERVAL = 5
+        RESULT = 6
+        COUNT = 7
 
     COLUMN_TO_NAME = {
         Column.ID: Text.get("id"),
@@ -49,8 +49,8 @@ class UpmsDatabaseModel(QAbstractTableModel):
 
     def __init__(self, a_db: UpmsDatabase, a_parent=None):
         super().__init__(a_parent)
-        self.__db: UpmsDatabase = a_db
-        self.__records: List[UpmsMeasure] = self.__db.get_all()
+        self.__db = a_db
+        self.__records = self.__db.get_all()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self.__records)

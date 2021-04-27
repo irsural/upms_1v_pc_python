@@ -27,7 +27,7 @@ def get_files_list(a_ip: str) -> Optional[List[str]]:
             os.remove(__files_list_filename)
         raise
     else:
-        with open(__files_list_filename) as files_list_file:
+        with open(__files_list_filename, encoding='cp1251') as files_list_file:
             files_list = []
             for filename in files_list_file:
                 for word in __exclude_words:

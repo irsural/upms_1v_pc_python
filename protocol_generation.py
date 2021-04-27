@@ -1,6 +1,5 @@
 from typing import List, Optional, Tuple, Dict
 import logging
-import odf
 import abc
 import os
 
@@ -103,7 +102,7 @@ class ExcelProtocolGenerator(UpmsProtocolGenerator):
             horizontal_start = 2
             horizontal_step = 9
             for idx, upms_measure in enumerate(a_upms_measures):
-                photo_path = a_photos_path.rstrip(os.sep) + os.sep + f"{upms_measure.id}.jpg"
+                photo_path = a_photos_path.rstrip(os.sep) + os.sep + "{}.jpg".format(upms_measure.id)
                 try:
                     img = openpyxl.drawing.image.Image(photo_path)
                     new_height = img.height * 2 / 3
@@ -120,7 +119,7 @@ class ExcelProtocolGenerator(UpmsProtocolGenerator):
                     cell_font = openpyxl.styles.Font(size='15')
                     sheet.cell(row - 1, col, value=Text.get("measure").format(upms_measure.id)).font = cell_font
                 except FileNotFoundError:
-                    logging.warning(f"File {photo_path} is not found")
+                    logging.warning("File {} is not found".format(photo_path))
 
     def insert_extra_parameters(self, a_extra_parameters: List[Tuple[str, str]]):
         if self.template_is_ok:

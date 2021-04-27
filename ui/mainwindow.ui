@@ -333,15 +333,7 @@
     <addaction name="russian_language_action"/>
     <addaction name="english_language_action"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>Формат протокола</string>
-    </property>
-    <addaction name="excel_protocol_checkbox"/>
-    <addaction name="calc_protocol_checkbox"/>
-   </widget>
    <addaction name="menu_2"/>
-   <addaction name="menu_3"/>
    <addaction name="menu"/>
   </widget>
   <action name="open_about_action">

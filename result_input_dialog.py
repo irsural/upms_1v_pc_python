@@ -17,7 +17,7 @@ class ResultInputDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.settings = a_settings
 
-        a_image_path = a_images_file_path.rstrip(os.sep) + os.sep + f"{a_upms_measure.id}.jpg"
+        a_image_path = a_images_file_path.rstrip(os.sep) + os.sep + "{}.jpg".format(a_upms_measure.id)
         if os.path.isfile(a_image_path):
             self.ui.photo_layout.removeItem(self.ui.photo_layout.itemAt(0))
             image = QtGui.QImage(a_image_path)

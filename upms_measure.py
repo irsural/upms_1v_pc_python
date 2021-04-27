@@ -39,20 +39,24 @@ class UpmsMeasure:
             return NotImplemented
 
     def __repr__(self):
-        return f"id: {self.id}, "\
-               f"user_id: {self.user_id}, "\
-               f"type: {self.type}, "\
-               f"date: {self.date}, "\
-               f"comment: {self.comment}, "\
-               f"interval: {self.interval}, "\
-               f"result: {self.result}, "\
-               f"other: {self.other}"
+        return "id: {}, "\
+               "user_id: {}, "\
+               "type: {}, "\
+               "date: {}, "\
+               "comment: {}, "\
+               "interval: {}, "\
+               "result: {}, "\
+               "other: {}".format(self.id, self.user_id, self.type,
+                                  self.date, self.comment, self.interval, self.result, self.other)
 
     def __str__(self):
-        return f"{Text.get('id')}: {self.id}, " \
-               f"{Text.get('uid')}: {self.user_id}, " \
-               f"{Text.get('type')}: {UpmsMeasure.TYPE_TO_STR[self.type]}, " \
-               f"{Text.get('date')}: {self.date}, " \
-               f"{Text.get('comment')}: {self.comment}, " \
-               f"{Text.get('interval')}: {self.interval}, " \
-               f"{Text.get('result')}: {self.result}, " \
+        return "{}: {}, " \
+               "{}: {}, " \
+               "{}: {}, " \
+               "{}: {}, " \
+               "{}: {}, " \
+               "{}: {}, " \
+               "{}: {}, ".format(Text.get('id'), self.id, Text.get('uid'), self.user_id,
+                                 Text.get('type'), UpmsMeasure.TYPE_TO_STR[self.type],
+                                 Text.get('date'), self.date, Text.get('comment'), self.comment,
+                                 Text.get('interval'), self.interval, Text.get('result'), self.result)
