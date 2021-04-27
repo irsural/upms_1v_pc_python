@@ -348,15 +348,17 @@ class MainWindow(QtWidgets.QMainWindow):
         extension = a_generator.protocol_ext()
         template_files = \
             list(filter(lambda s: s.endswith(extension), self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]))
-        if template_files:
-            template_filename = template_files[0]
+        template_filename = template_files[0]
+
+        if os.path.isfile(template_filename):
             filename = self.get_accessible_name(a_name_template, a_save_folder, extension)
             report_path = os.path.join(a_save_folder.rstrip(os.sep), filename)
             shutil.copyfile(template_filename, report_path)
 
             return a_generator(report_path)
         else:
-            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found").format(extension),
+            QtWidgets.QMessageBox.critical(self, Text.get("err"),
+                                           Text.get("templates_are_not_found").format(template_filename),
                                            QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
             return None
 
@@ -369,12 +371,20 @@ class MainWindow(QtWidgets.QMainWindow):
                 a_name_template, a_save_folder, a_measure_type, pg.ExcelProtocolGenerator)
             if generator is not None:
                 protocol_generators.append(generator)
+            else:
+                QtWidgets.QMessageBox.critical(self, Text.get("err"),
+                                               Text.get("templates_are_not_found").format(generator.get_report_path()),
+                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
         if False:
             generator = self.create_protocol_generator(
                 a_name_template, a_save_folder, a_measure_type, pg.CalcProtocolGenerator)
             if generator is not None:
                 protocol_generators.append(generator)
+            else:
+                QtWidgets.QMessageBox.critical(self, Text.get("err"),
+                                               Text.get("templates_are_not_found").format(generator.get_report_path()),
+                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
         for protocol_gen in protocol_generators:
             if protocol_gen.is_template_ok():
