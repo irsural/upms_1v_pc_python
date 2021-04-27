@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple, Dict
 import logging
+import odf
 import abc
 import os
 
@@ -17,6 +18,15 @@ class UpmsProtocolGenerator(abc.ABC):
 
     @abc.abstractmethod
     def is_template_ok(self):
+        pass
+
+    @staticmethod
+    @abc.abstractmethod
+    def protocol_ext() -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_report_path(self) -> str:
         pass
 
     @abc.abstractmethod
@@ -62,6 +72,13 @@ class ExcelProtocolGenerator(UpmsProtocolGenerator):
 
     def is_template_ok(self):
         return self.template_is_ok
+
+    @staticmethod
+    def protocol_ext() -> str:
+        return ".xlsx"
+
+    def get_report_path(self) -> str:
+        return self.report_filepath
 
     def insert_measures(self, a_upms_measures: List[UpmsMeasure]):
         if self.template_is_ok:
@@ -139,6 +156,13 @@ class CalcProtocolGenerator(UpmsProtocolGenerator):
 
     def is_template_ok(self):
         return self.template_is_ok
+
+    @staticmethod
+    def protocol_ext() -> str:
+        return ".ods"
+
+    def get_report_path(self) -> str:
+        return self.report_filepath
 
     def insert_measures(self, a_upms_measures: List[UpmsMeasure]):
         pass

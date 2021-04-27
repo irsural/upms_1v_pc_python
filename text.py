@@ -41,7 +41,7 @@ class Text:
         "err": ["Ошибка", "Error"],
         "path_err": ["Неверно указана папка для загрузки файлов", "Invalid download location"],
         "save_folder_error": ["Неверно указана папка для сохранения протоколов", "Invalid protocols’ location"],
-        "templates_are_not_found": ['Файл шаблона не найден', 'Template file not found'],
+        "templates_are_not_found": ['Файл шаблона не найден ({})', 'Template file not found ({})'],
         "ini_err": ['Файл конфигурации поврежден. Пожалуйста, удалите файл "settings.ini" и запустите программу заново',
                     'Configuration file is corrupted. Please, delete the "settings.ini file and restart the program"'],
         "ip_format_err": ["Неверный формат IP адреса", "Invalid IP address format"],

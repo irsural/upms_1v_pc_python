@@ -1,5 +1,5 @@
 from logging.handlers import RotatingFileHandler
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional, Dict, Type
 import logging
 import shutil
 import socket
@@ -7,7 +7,6 @@ import sys
 import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui, QtNetwork
-import openpyxl
 
 from irspy.qt.custom_widgets.QTableDelegates import TransparentPainterForView
 from irspy.utils import exception_decorator, exception_decorator_print
@@ -334,11 +333,11 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("selection_info"),
                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
-    def get_template_file(self, a_measure_type) -> str:
-        for path in self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]:
-            if os.path.isfile(path):
-                return path
-        return ""
+    # def get_template_file(self, a_measure_type) -> str:
+    #     for path in self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]:
+    #         if os.path.isfile(path):
+    #             return path
+    #     return ""
 
     @staticmethod
     def get_accessible_name(a_name_template, a_save_folder, a_extension: str) -> str:
@@ -349,18 +348,38 @@ class MainWindow(QtWidgets.QMainWindow):
             number += 1
         return f"{name}{a_extension}"
 
-    @exception_decorator
-    def create_report(self, a_name_template, a_save_folder, a_template_path, a_photos_path,
-                      a_upms_measures: List[UpmsMeasure]):
-        filename = self.get_accessible_name(a_name_template, a_save_folder, os.path.splitext(a_template_path)[1])
-        report_path = a_save_folder.rstrip(os.sep) + os.sep + filename
-        shutil.copyfile(a_template_path, report_path)
+    def create_protocol_generator(self, a_name_template, a_save_folder, a_measure_type,
+                                  a_generator: Type[pg.UpmsProtocolGenerator]) -> Optional[pg.UpmsProtocolGenerator]:
+        extension = a_generator.protocol_ext()
+        template_files = \
+            list(filter(lambda s: s.endswith(extension), self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]))
+        if template_files:
+            template_filename = template_files[0]
+            filename = self.get_accessible_name(a_name_template, a_save_folder, extension)
+            report_path = os.path.join(a_save_folder.rstrip(os.sep), filename)
+            shutil.copyfile(template_filename, report_path)
 
+            return a_generator(report_path)
+        else:
+            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found").format(extension),
+                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+            return None
+
+    @exception_decorator
+    def create_report(self, a_name_template, a_save_folder, a_measure_type: UpmsMeasure.MeasureType, a_photos_path,
+                      a_upms_measures: List[UpmsMeasure]):
         protocol_generators = []
         if self.settings.generate_excel:
-            protocol_generators.append(pg.ExcelProtocolGenerator(report_path))
+            generator = self.create_protocol_generator(
+                a_name_template, a_save_folder, a_measure_type, pg.ExcelProtocolGenerator)
+            if generator is not None:
+                protocol_generators.append(generator)
+
         if self.settings.generate_calc:
-            protocol_generators.append(pg.CalcProtocolGenerator(report_path))
+            generator = self.create_protocol_generator(
+                a_name_template, a_save_folder, a_measure_type, pg.CalcProtocolGenerator)
+            if generator is not None:
+                protocol_generators.append(generator)
 
         for protocol_gen in protocol_generators:
             if protocol_gen.is_template_ok():
@@ -371,12 +390,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 protocol_gen.save()
 
                 QtWidgets.QMessageBox.information(self, Text.get("info"),
-                                                  Text.get("success_generated").format(report_path),
+                                                  Text.get("success_generated").format(protocol_gen.get_report_path()),
                                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-                os.startfile(report_path)
+                os.startfile(protocol_gen.get_report_path())
             else:
                 QtWidgets.QMessageBox.critical(self, Text.get("err"),
-                                               Text.get("data_sheet_not_found").format(report_path),
+                                               Text.get("data_sheet_not_found").format(protocol_gen.get_report_path()),
                                                QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
     def create_report_button_clicked(self, _):
@@ -387,21 +406,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 if len(types) == types.count(types[0]):
                     save_folder = self.ui.save_folder_edit.text()
                     if save_folder and os.path.isdir(save_folder):
-                        template_path = self.get_template_file(types[0])
-                        if template_path:
+                        # template_path = self.get_template_file(types[0])
+                        # if template_path:
                             if self.ui.download_path_edit.text():
                                 name_template = self.ui.name_template_edit.text() if self.ui.name_template_edit.text() else \
                                     self.default_name_template
                                 upms_measures = [self.measures_table_model.get_upms_measure_by_row(self.proxy.mapToSource(idx).row())
                                                  for idx in rows]
-                                self.create_report(name_template, save_folder, template_path,
+                                self.create_report(name_template, save_folder, types[0],
                                                    self.ui.download_path_edit.text(), upms_measures)
                             else:
                                 QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("path_err"),
                                                                QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-                        else:
-                            QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
-                                                           QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
+                        # else:
+                        #     QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("templates_are_not_found"),
+                        #                                    QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
                     else:
                         QtWidgets.QMessageBox.critical(self, Text.get("err"), Text.get("save_folder_error"),
                                                        QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
