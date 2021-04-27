@@ -1,5 +1,6 @@
 from logging.handlers import RotatingFileHandler
 from typing import List, Optional, Dict, Type
+import subprocess
 import logging
 import shutil
 import socket
@@ -35,9 +36,9 @@ class MainWindow(QtWidgets.QMainWindow):
     default_name_template = "report"
 
     MEASURE_TYPE_TO_TEMPLATE_PATH = {
-        UpmsMeasure.MeasureType.MECH_STOPWATCH: ("./Templates/ms_template.xlsx", "./Templates/ms_template.ods"),
-        UpmsMeasure.MeasureType.ELEC_STOPWATCH: ("./Templates/es_template.xlsx", "./Templates/es_template.ods"),
-        UpmsMeasure.MeasureType.CLOCK: ("./Templates/clock_template.xlsx", "./Templates/clock_template.ods"),
+        UpmsMeasure.MeasureType.MECH_STOPWATCH: ("Templates/ms_template.xlsx", "Templates/ms_template.ods"),
+        UpmsMeasure.MeasureType.ELEC_STOPWATCH: ("Templates/es_template.xlsx", "Templates/es_template.ods"),
+        UpmsMeasure.MeasureType.CLOCK: ("Templates/clock_template.xlsx", "Templates/clock_template.ods"),
     }
 
     def __init__(self):
@@ -47,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         try:
-            self.settings = settings.get_ini_settings()
+            self.settings = settings.get_ini_settings(os.path.join(self.get_application_path(), "settings.ini"))
             ini_ok = True
         except BadIniException:
             ini_ok = False
@@ -81,7 +82,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.name_template_edit.setText(self.settings.name_template)
             self.ui.save_folder_edit.setText(self.settings.save_folder)
 
-            self.db = UpmsDatabase("database.db")
+            self.db = UpmsDatabase(os.path.join(self.get_application_path(), "database.db"))
             self.measures_table_model = None
             self.proxy = None
             self.update_model()
@@ -138,7 +139,8 @@ class MainWindow(QtWidgets.QMainWindow):
         log = qt_utils.QTextEditLogger(self.ui.log_text_edit)
         log.setFormatter(logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
 
-        file_log = RotatingFileHandler("upms_1v_pc.log", maxBytes=30*1024*1024, backupCount=3, encoding='utf8')
+        file_log = RotatingFileHandler(os.path.join(self.get_application_path(), "upms_1v_pc.log"),
+                                       maxBytes=30*1024*1024, backupCount=3, encoding='utf8')
         file_log.setLevel(logging.DEBUG)
         file_log.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S'))
 
@@ -343,12 +345,21 @@ class MainWindow(QtWidgets.QMainWindow):
             number += 1
         return "{}{}".format(name, a_extension)
 
+    @staticmethod
+    def get_application_path():
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+        else:
+            application_path = os.path.dirname(__file__)
+        return application_path
+
     def create_protocol_generator(self, a_name_template, a_save_folder, a_measure_type,
                                   a_generator: Type[pg.UpmsProtocolGenerator]) -> Optional[pg.UpmsProtocolGenerator]:
         extension = a_generator.protocol_ext()
         template_files = \
             list(filter(lambda s: s.endswith(extension), self.MEASURE_TYPE_TO_TEMPLATE_PATH[a_measure_type]))
-        template_filename = template_files[0]
+
+        template_filename = os.path.join(self.get_application_path(), template_files[0])
 
         if os.path.isfile(template_filename):
             filename = self.get_accessible_name(a_name_template, a_save_folder, extension)
@@ -371,20 +382,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 a_name_template, a_save_folder, a_measure_type, pg.ExcelProtocolGenerator)
             if generator is not None:
                 protocol_generators.append(generator)
-            else:
-                QtWidgets.QMessageBox.critical(self, Text.get("err"),
-                                               Text.get("templates_are_not_found").format(generator.get_report_path()),
-                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
         if False:
             generator = self.create_protocol_generator(
                 a_name_template, a_save_folder, a_measure_type, pg.CalcProtocolGenerator)
             if generator is not None:
                 protocol_generators.append(generator)
-            else:
-                QtWidgets.QMessageBox.critical(self, Text.get("err"),
-                                               Text.get("templates_are_not_found").format(generator.get_report_path()),
-                                               QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
 
         for protocol_gen in protocol_generators:
             if protocol_gen.is_template_ok():
@@ -397,7 +400,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.information(self, Text.get("info"),
                                                   Text.get("success_generated").format(protocol_gen.get_report_path()),
                                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
-                os.startfile(protocol_gen.get_report_path())
+                if os.name == 'nt':
+                    os.startfile(protocol_gen.get_report_path())
+                else:
+                    opener = "open" if sys.platform == "darwin" else "xdg-open"
+                    subprocess.call([opener, protocol_gen.get_report_path()])
             else:
                 QtWidgets.QMessageBox.critical(self, Text.get("err"),
                                                Text.get("data_sheet_not_found").format(protocol_gen.get_report_path()),
