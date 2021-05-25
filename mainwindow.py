@@ -297,7 +297,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     socket.inet_aton(ip)
                     self.ui.ip_combobox.addItem(ip)
                 except socket.error:
-                    logging.error("{} не является валидным ip адресом".format(ip))
+                    logging.error("{} is not valid ip-address".format(ip))
 
     @exception_decorator_print
     def input_result_button_clicked(self, _):
