@@ -1,4 +1,5 @@
-from typing import List, Optional, Tuple, Dict
+from typing import List, Tuple
+import datetime
 import logging
 import abc
 import os
@@ -79,12 +80,21 @@ class ExcelProtocolGenerator(UpmsProtocolGenerator):
     def get_report_path(self) -> str:
         return self.report_filepath
 
+    @staticmethod
+    def excel_date(date1):
+        temp = datetime.datetime(1899, 12, 30)  # Note, not 31st Dec but 30th!
+        delta = date1 - temp
+        return float(delta.days) + (float(delta.seconds) / 86400)
+
     def insert_measures(self, a_upms_measures: List[UpmsMeasure]):
         if self.template_is_ok:
             sheet = self.workbook.get_sheet_by_name(self.data_sheet)
             for idx, column in enumerate(sheet.iter_cols(min_col=2, max_col=len(a_upms_measures) + 1, min_row=1, max_row=5)):
                 column[0].value = a_upms_measures[idx].id
-                column[1].value = a_upms_measures[idx].date
+
+                date_time = datetime.datetime.strptime(a_upms_measures[idx].date, '%Y-%m-%d %H:%M:%S')
+                column[1].value = self.excel_date(date_time)
+
                 column[2].value = a_upms_measures[idx].interval
                 column[3].value = a_upms_measures[idx].result
                 column[4].value = a_upms_measures[idx].comment

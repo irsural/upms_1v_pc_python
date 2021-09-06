@@ -43,7 +43,7 @@ selected</translation>
 a protocol</translation>
     </message>
     <message>
-        <location filename="../py/mainwindow.py" line="200"/>
+        <location filename="../py/mainwindow.py" line="205"/>
         <source>%p%</source>
         <translation>%p%</translation>
     </message>
@@ -74,7 +74,7 @@ location</translation>
         <translation type="obsolete">IP-address:</translation>
     </message>
     <message>
-        <location filename="../py/mainwindow.py" line="197"/>
+        <location filename="../py/mainwindow.py" line="202"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -94,95 +94,95 @@ location</translation>
         <translation type="obsolete">About...</translation>
     </message>
     <message>
-        <location filename="../py/mainwindow.py" line="218"/>
+        <location filename="../py/mainwindow.py" line="223"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="193"/>
+        <location filename="../py/mainwindow.py" line="198"/>
         <source>УПМС-1В ПК</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="208"/>
+        <location filename="../py/mainwindow.py" line="213"/>
         <source>Скачать результаты
 с установки</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="202"/>
+        <location filename="../py/mainwindow.py" line="207"/>
         <source>Дополнительные
 параметры</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="204"/>
+        <location filename="../py/mainwindow.py" line="209"/>
         <source>Ввести
 результат</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="206"/>
+        <location filename="../py/mainwindow.py" line="211"/>
         <source>Удалить
 выделенные</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="212"/>
+        <location filename="../py/mainwindow.py" line="217"/>
         <source>Сформировать
 протокол</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="194"/>
+        <location filename="../py/mainwindow.py" line="199"/>
         <source>Папка для
 загрузки файлов:</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="198"/>
+        <location filename="../py/mainwindow.py" line="203"/>
         <source>Шаблон для
 имени протокола</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="210"/>
+        <location filename="../py/mainwindow.py" line="215"/>
         <source>Папка для
 сохранения протоколов</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="201"/>
+        <location filename="../py/mainwindow.py" line="206"/>
         <source>IP-адрес:</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="214"/>
+        <location filename="../py/mainwindow.py" line="219"/>
         <source>Справка</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="215"/>
+        <location filename="../py/mainwindow.py" line="220"/>
         <source>Язык</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="216"/>
+        <location filename="../py/mainwindow.py" line="221"/>
         <source>О программе...</source>
         <translation type="unfinished"></translation>
     </message>
     <message encoding="UTF-8">
-        <location filename="../py/mainwindow.py" line="217"/>
+        <location filename="../py/mainwindow.py" line="222"/>
         <source>Русский</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../py/mainwindow.py" line="219"/>
+        <location filename="../py/mainwindow.py" line="224"/>
         <source>Microsoft Excel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../py/mainwindow.py" line="220"/>
+        <location filename="../py/mainwindow.py" line="225"/>
         <source>LibreOffice Calc</source>
         <translation type="unfinished"></translation>
     </message>
