@@ -1,4 +1,6 @@
 # python 3.7
+# Для запуска собранного pyinstaller экзешника на Win 7 должен быть установлен redistributable 2015
+# https://www.microsoft.com/en-us/download/confirmation.aspx?id=48145
 PyQt5~=5.14.2
 PyQt5-sip~=12.8.1
 PyQt5-stubs~=5.14.2.2
