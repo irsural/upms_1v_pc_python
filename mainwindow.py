@@ -208,10 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 update_all = False
                 upms_files_list = upms_tftp.get_files_list(self.ui.ip_combobox.currentText())
                 self.ui.download_progress_bar.setHidden(False)
-                for number, measure in enumerate(measures_list):
-                    self.ui.download_progress_bar.setValue(
-                        number / (len(upms_files_list) - 1) * self.ui.download_progress_bar.maximum())
-
+                for number, measure in enumerate(measures_list, start=1):
                     measure_params = [meas.strip() for meas in measure.strip().split(',')]
                     upms_measure = UpmsMeasure(*measure_params)
                     upms_prev_measure = self.db.get(upms_measure.id)
@@ -243,6 +240,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif not os.path.isfile(os.path.join(download_folder.rstrip(os.sep), "{}.jpg".format(upms_measure.id))):
                         # Докачиваем файл, если запись в БД есть, а файла нет
                         self.download_photo(upms_measure.id, upms_files_list, download_folder)
+
+                    self.ui.download_progress_bar.setValue(
+                        number / len(measures_list) * self.ui.download_progress_bar.maximum())
+
                 else:
                     QtWidgets.QMessageBox.information(self, Text.get("info"), Text.get("success_download"),
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Ok)
